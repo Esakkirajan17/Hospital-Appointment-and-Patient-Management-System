@@ -62,6 +62,12 @@ A complete web-based Hospital Management System with QR code payments, doctor ap
 
 ### Step 1: Clone the Repository
 
+### Screenshots
+
+Home Page
+<img width="1500" height="953" alt="image" src="https://github.com/user-attachments/assets/e45a08ec-bee3-4b6c-9bba-3117d75ddd8e" />
+
+
 ```bash
 git clone https://github.com/Esakkirajan17/Hospital-Appointment-and-Patient-Management-System.git
 cd Hospital-Appointment-and-Patient-Management-System

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Payment History{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-history me-2 text-primary"></i>Payment History</h2>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">All Transactions</h5>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Payment ID</th>
+                                    <th>Date</th>
+                                    <th>Appointment #</th>
+                                    <th>Doctor</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td><code>{{ payment.payment_id }}</code></td>
+                                    <td>{{ payment.transaction_date.strftime('%d-%m-%Y %H:%M') }}</td>
+                                    <td><code>{{ payment.appointment.appointment_number }}</code></td>
+                                    <td>{{ payment.appointment.doctor.user.full_name|doctor_name }}</td>
+                                    <td class="text-success fw-bold">₹{{ "%.2f"|format(payment.amount) }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ payment.payment_method|upper }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ payment.status|upper }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                        <h4>No Payment History</h4>
+                        <p class="text-muted">You haven't made any payments yet.</p>
+                        <a href="{{ url_for('patient_appointments') }}" class="btn btn-primary">
+                            <i class="fas fa-calendar-check me-2"></i>View Appointments
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Summary -->
+{% if payments %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h6>Total Paid</h6>
+                <h3>₹{{ "%.2f"|format(payments|sum(attribute='amount')) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h6>Total Transactions</h6>
+                <h3>{{ payments|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h6>Last Payment</h6>
+                <h5>{{ payments[0].transaction_date.strftime('%d-%m-%Y') }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

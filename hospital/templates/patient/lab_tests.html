@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Available Lab Tests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-flask"></i> Available Lab Tests</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for test in tests %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ test.name }}</h5>
+                                    <p class="card-text text-muted small">{{ test.description[:100] }}{% if test.description|length > 100 %}...{% endif %}</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-info">Report: {{ test.report_time }}</span>
+                                        <span class="badge bg-success">₹{{ test.price }}</span>
+                                    </div>
+                                    <p class="card-text small">
+                                        <strong>Preparation:</strong> {{ test.preparation[:80] }}{% if test.preparation|length > 80 %}...{% endif %}
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="{{ url_for('book_lab_test', test_id=test.id) }}" class="btn btn-primary w-100">
+                                        <i class="fas fa-calendar-plus"></i> Book Test
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-flask fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">No Lab Tests Available</h5>
+                                <p class="text-muted">Please check back later for available tests.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Lab Timing Information -->
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-clock"></i> <strong>Lab Timings:</strong> Monday to Saturday, 9:00 AM to 9:00 PM
+                        <br><small>Sunday closed for maintenance</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

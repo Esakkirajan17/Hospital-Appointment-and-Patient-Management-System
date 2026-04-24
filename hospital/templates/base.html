@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hospital Management System{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js (for health dashboard) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-hospital me-2"></i>HMS
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Dark Mode Toggle -->
+                    <li class="nav-item me-2">
+                        <button class="btn btn-outline-light" id="darkModeToggle" onclick="toggleDarkMode()">
+                            <i class="fas fa-moon" id="darkModeIcon"></i>
+                        </button>
+                    </li>
+                    
+                    {% if current_user.is_authenticated %}
+                        <!-- Notification Bell -->
+                        <li class="nav-item me-2 position-relative" id="notificationContainer" style="display: none;">
+                            <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">0</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" id="notificationMenu" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                                <li><h6 class="dropdown-header">Notifications</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-center text-muted" href="#">No new notifications</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- User Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>{{ current_user.full_name }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <!-- ========== PATIENT LINKS ========== -->
+                                {% if current_user.is_patient %}
+                                <li><h6 class="dropdown-header">Patient Menu</h6></li>
+                                <li><a class="dropdown-item" href="{{ url_for('patient_profile') }}">
+                                    <i class="fas fa-user-circle me-2"></i>My Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('patient_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('book_appointment') }}">
+                                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('patient_appointments') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>My Appointments
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('patient_prescriptions') }}">
+                                    <i class="fas fa-prescription me-2"></i>Prescriptions
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('payment_history') }}">
+                                    <i class="fas fa-credit-card me-2"></i>Payment History
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('my_reports') }}">
+                                    <i class="fas fa-file-medical me-2"></i>My Reports
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('patient_lab_tests') }}">
+                                    <i class="fas fa-flask me-2"></i>Lab Tests
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('patient_health_dashboard') }}">
+                                    <i class="fas fa-heartbeat me-2"></i>Health Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('symptoms_checker') }}">
+                                    <i class="fas fa-stethoscope me-2"></i>Symptom Checker
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('calendar_events') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>Calendar
+                                </a></li>
+                                {% endif %}
+                                
+                                <!-- ========== DOCTOR LINKS ========== -->
+                                {% if current_user.is_doctor %}
+                                <li><h6 class="dropdown-header">Doctor Menu</h6></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor_profile') }}">
+                                    <i class="fas fa-user-md me-2"></i>My Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor_queue') }}">
+                                    <i class="fas fa-list-ol me-2"></i>Today's Queue
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor_appointments') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>All Appointments
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor_prescriptions') }}">
+                                    <i class="fas fa-prescription me-2"></i>Prescriptions
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor_feedbacks') }}">
+                                    <i class="fas fa-star me-2"></i>Feedback
+                                </a></li>
+                                {% endif %}
+                                
+                                <!-- ========== ADMIN LINKS ========== -->
+                                {% if current_user.is_admin %}
+                                <li><h6 class="dropdown-header">Admin Menu</h6></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">
+                                    <i class="fas fa-users-cog me-2"></i>Manage Users
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_appointments') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>All Appointments
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_lab_tests') }}">
+                                    <i class="fas fa-flask me-2"></i>Lab Tests
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_doctor_schedules') }}">
+                                    <i class="fas fa-clock me-2"></i>Doctor Schedules
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_analytics') }}">
+                                    <i class="fas fa-chart-line me-2"></i>Analytics
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_advanced_analytics') }}">
+                                    <i class="fas fa-chart-pie me-2"></i>Advanced Analytics
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('export_appointments', format='excel') }}">
+                                    <i class="fas fa-file-export me-2"></i>Export Reports
+                                </a></li>
+                                {% endif %}
+                                
+                                <!-- ========== COMMON LINKS ========== -->
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle me-2"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% elif category == 'info' %}
+                                <i class="fas fa-info-circle me-2"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Hospital Management System</p>
+            <p class="small text-muted mb-0">
+                <i class="fas fa-clock me-1"></i>
+                Consultation Hours: 9:00 AM to 9:00 PM (IST)
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    
+    <!-- Dark Mode Script -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        updateDarkModeIcon(savedTheme);
+        
+        function toggleDarkMode() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateDarkModeIcon(newTheme);
+        }
+        
+        function updateDarkModeIcon(theme) {
+            const icon = document.getElementById('darkModeIcon');
+            if (icon) {
+                if (theme === 'dark') {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            }
+        }
+    </script>
+    
+    <script>
+        setTimeout(function() {
+            document.querySelectorAll('.alert').forEach(function(alert) {
+                alert.remove();
+            });
+        }, 5000);
+    </script>
+    
+    <script>
+        {% if current_user.is_authenticated %}
+        document.getElementById('notificationContainer').style.display = 'block';
+        {% endif %}
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

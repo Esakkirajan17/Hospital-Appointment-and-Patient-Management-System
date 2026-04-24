@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Prescription Details{% endblock %}
+
+{% block styles %}
+<style>
+    .prescription-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    [data-bs-theme="dark"] .prescription-card {
+        background: #2c3034;
+        border: 1px solid #444;
+    }
+    
+    .prescription-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #3498db;
+    }
+    
+    .hospital-name {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #3498db;
+        margin-bottom: 0.5rem;
+    }
+    
+    .prescription-title {
+        font-size: 1.2rem;
+        color: #6c757d;
+    }
+    
+    .info-section {
+        margin-bottom: 2rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    [data-bs-theme="dark"] .info-item {
+        background: #1e1e1e;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.2rem;
+    }
+    
+    .info-value {
+        font-weight: 600;
+    }
+    
+    .medication-table {
+        width: 100%;
+        margin: 1.5rem 0;
+        border-collapse: collapse;
+    }
+    
+    .medication-table th {
+        background: #3498db;
+        color: white;
+        padding: 0.75rem;
+        text-align: left;
+    }
+    
+    .medication-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    [data-bs-theme="dark"] .medication-table td {
+        border-bottom-color: #444;
+    }
+    
+    .signature {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #dee2e6;
+        text-align: right;
+    }
+    
+    [data-bs-theme="dark"] .signature {
+        border-top-color: #444;
+    }
+    
+    .doctor-signature {
+        font-family: 'Brush Script MT', cursive;
+        font-size: 1.5rem;
+        color: #3498db;
+    }
+    
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .prescription-card {
+            box-shadow: none;
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prescription-card">
+    <!-- Prescription Header -->
+    <div class="prescription-header">
+        <div class="hospital-name">
+            <i class="fas fa-hospital me-2"></i>HMS Hospital
+        </div>
+        <div class="prescription-title">Digital Prescription</div>
+    </div>
+    
+    <!-- Prescription Number -->
+    <div class="text-end mb-3">
+        <span class="badge bg-primary p-2">#{{ prescription.prescription_number }}</span>
+    </div>
+    
+    <!-- Patient & Doctor Info -->
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Patient Name</div>
+            <div class="info-value">{{ prescription.patient.user.full_name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Patient ID</div>
+            <div class="info-value">P{{ "%04d" % prescription.patient.id }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Doctor</div>
+            <div class="info-value">{{ prescription.doctor.user.full_name|doctor_name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Date</div>
+            <div class="info-value">{{ prescription.prescribed_date.strftime('%d-%m-%Y') }}</div>
+        </div>
+        {% if prescription.patient.date_of_birth %}
+        <div class="info-item">
+            <div class="info-label">Age</div>
+            <div class="info-value">{{ (now.date() - prescription.patient.date_of_birth).days // 365 }} years</div>
+        </div>
+        {% endif %}
+        {% if prescription.patient.blood_group %}
+        <div class="info-item">
+            <div class="info-label">Blood Group</div>
+            <div class="info-value">{{ prescription.patient.blood_group }}</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Diagnosis -->
+    <div class="info-section">
+        <h6 class="mb-2">Diagnosis:</h6>
+        <p>{{ prescription.diagnosis }}</p>
+    </div>
+    
+    <!-- Medication -->
+    <div class="info-section">
+        <h6 class="mb-2">Prescribed Medication:</h6>
+        <table class="medication-table">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Duration</th>
+                    <th>Instructions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in prescription.medication.split('\n') %}
+                <tr>
+                    <td>{{ med.split(' - ')[0] if ' - ' in med else med }}</td>
+                    <td>{{ med.split(' - ')[1] if ' - ' in med and med.split(' - ')|length > 1 else '-' }}</td>
+                    <td>{{ med.split(' - ')[2] if ' - ' in med and med.split(' - ')|length > 2 else '-' }}</td>
+                    <td>{{ med.split(' - ')[3] if ' - ' in med and med.split(' - ')|length > 3 else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Instructions -->
+    {% if prescription.instructions %}
+    <div class="info-section">
+        <h6 class="mb-2">Additional Instructions:</h6>
+        <p>{{ prescription.instructions }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Follow-up -->
+    {% if prescription.follow_up_date %}
+    <div class="info-section">
+        <h6 class="mb-2">Follow-up Date:</h6>
+        <p>{{ prescription.follow_up_date.strftime('%d-%m-%Y') }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Doctor Signature -->
+    <div class="signature">
+        <div class="doctor-signature">{{ prescription.doctor.user.full_name|doctor_name }}</div>
+        <div class="text-muted small">{{ prescription.doctor.specialization }}</div>
+        <div class="text-muted small">License: {{ prescription.doctor.license_number or 'N/A' }}</div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="text-center text-muted small mt-4">
+        <p class="mb-0">This is a computer generated prescription - valid without signature</p>
+        <p class="mb-0">Generated on: {{ now.strftime('%d-%m-%Y %H:%M') }}</p>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="text-center mt-4 no-print">
+    <a href="{{ url_for('download_prescription', prescription_id=prescription.id) }}" class="btn btn-success me-2">
+        <i class="fas fa-download me-2"></i>Download PDF
+    </a>
+    <a href="{{ url_for('patient_prescriptions') }}" class="btn btn-outline-primary me-2">
+        <i class="fas fa-arrow-left me-2"></i>Back to Prescriptions
+    </a>
+    <button onclick="window.print()" class="btn btn-outline-secondary">
+        <i class="fas fa-print me-2"></i>Print
+    </button>
+</div>
+{% endblock %}

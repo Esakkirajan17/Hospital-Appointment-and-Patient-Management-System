@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Payment QR Code{% endblock %}
+
+{% block styles %}
+<style>
+    .qr-container {
+        max-width: 500px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .qr-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    [data-bs-theme="dark"] .qr-card {
+        background: #2c3034;
+        border: 1px solid #444;
+    }
+    
+    .qr-code {
+        background: white;
+        padding: 1rem;
+        border-radius: 15px;
+        display: inline-block;
+        margin: 1rem 0;
+    }
+    
+    .qr-code img {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .payment-amount {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .demo-badge {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+    
+    .payment-methods {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+    
+    .payment-method {
+        flex: 1;
+        max-width: 120px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .payment-method:hover {
+        border-color: #28a745;
+        transform: translateY(-3px);
+    }
+    
+    .payment-method.selected {
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.1);
+    }
+    
+    .manual-payment {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .demo-note {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="qr-container">
+    <div class="qr-card">
+        <div class="demo-badge">
+            <i class="fas fa-flask me-2"></i>DEMO MODE - No real payment
+        </div>
+        
+        <h2 class="mb-3">Complete Payment</h2>
+        <p class="text-muted">Appointment #: {{ appointment.appointment_number }}</p>
+        
+        <div class="payment-amount">{{ appointment.fee_charged|currency }}</div>
+        <p class="text-muted small">(Including 18% GST)</p>
+        
+        <div class="qr-code">
+            <img src="data:image/png;base64,{{ payment_qr.qr_code_data }}" alt="Payment QR Code">
+        </div>
+        
+        <p><strong>Scan with any UPI app</strong> (Google Pay, PhonePe, Paytm)</p>
+        
+        <div class="payment-methods">
+            <div class="payment-method selected" data-method="qr">
+                <i class="fas fa-qrcode fa-2x text-primary mb-2"></i>
+                <div>Scan QR</div>
+            </div>
+            <div class="payment-method" data-method="upi">
+                <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                <div>UPI ID</div>
+            </div>
+            <div class="payment-method" data-method="card">
+                <i class="fas fa-credit-card fa-2x text-warning mb-2"></i>
+                <div>Card</div>
+            </div>
+        </div>
+        
+        <div class="manual-payment" id="upiDetails" style="display: none;">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>UPI ID:</strong> hospital@okhdfcbank<br>
+                <small>Pay using any UPI app</small>
+            </div>
+        </div>
+        
+        <div class="manual-payment" id="cardDetails" style="display: none;">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label>Card Number (Demo)</label>
+                    <input type="text" class="form-control" id="cardNumber" 
+                           placeholder="4111 1111 1111 1111" value="4111 1111 1111 1111">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Expiry</label>
+                    <input type="text" class="form-control" id="expiry" placeholder="12/25" value="12/25">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>CVV</label>
+                    <input type="password" class="form-control" id="cvv" placeholder="123" value="123">
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-note">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Demo Mode:</strong> No actual payment will be charged.
+            Click "Pay Now" to simulate successful payment.
+        </div>
+        
+        <div class="d-grid gap-2 mt-4">
+            <button id="payButton" class="btn btn-success btn-lg">
+                <i class="fas fa-lock me-2"></i>Pay {{ appointment.fee_charged|currency }}
+            </button>
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline-secondary">
+                Pay Later
+            </a>
+        </div>
+    </div>
+    
+    <!-- Prescription Preview (Locked) -->
+    {% if prescription %}
+    <div class="qr-card">
+        <h5><i class="fas fa-lock me-2"></i>Prescription (Locked)</h5>
+        <p class="text-muted">Complete payment to unlock and view prescription</p>
+        <div class="text-center">
+            <i class="fas fa-lock fa-3x text-muted"></i>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const payButton = document.getElementById('payButton');
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const upiDetails = document.getElementById('upiDetails');
+    const cardDetails = document.getElementById('cardDetails');
+    let selectedMethod = 'qr';
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            paymentMethods.forEach(m => m.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedMethod = this.dataset.method;
+            
+            upiDetails.style.display = selectedMethod === 'upi' ? 'block' : 'none';
+            cardDetails.style.display = selectedMethod === 'card' ? 'block' : 'none';
+        });
+    });
+    
+    payButton.addEventListener('click', async function() {
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        
+        setTimeout(() => {
+            fetch('{{ url_for("process_payment", appointment_id=appointment.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `payment_method=${selectedMethod}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Payment failed. Please try again.');
+                    payButton.disabled = false;
+                    payButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay {{ appointment.fee_charged|currency }}';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Payment failed. Please try again.');
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay {{ appointment.fee_charged|currency }}';
+            });
+        }, 1500);
+    });
+});
+</script>
+{% endblock %}

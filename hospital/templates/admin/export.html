@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Export Reports{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<h2 class="mb-4"><i class="fas fa-file-export me-2 text-primary"></i>Export Reports</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Appointments Report</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Export all appointments with filters for date range and status.</p>
+                
+                <form method="GET" action="{{ url_for('export_appointments', format='excel') }}" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" name="start_date">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" name="end_date">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="">All</option>
+                                <option value="scheduled">Scheduled</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>Export to Excel
+                        </button>
+                        <a href="{{ url_for('export_appointments', format='csv') }}" class="btn btn-info">
+                            <i class="fas fa-file-csv me-2"></i>Export to CSV
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Advanced Reports</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Access detailed analytics and reports.</p>
+                <a href="{{ url_for('admin_advanced_analytics') }}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-chart-pie me-2"></i>Advanced Analytics
+                </a>
+                <a href="{{ url_for('admin_lab_tests') }}" class="btn btn-outline-success w-100">
+                    <i class="fas fa-flask me-2"></i>Lab Test Reports
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Export Tips -->
+<div class="card mt-3">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Export Tips</h5>
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li><strong>Excel Format:</strong> Best for data analysis and reporting</li>
+            <li><strong>CSV Format:</strong> Best for importing into other systems</li>
+            <li><strong>Date Filters:</strong> Use date range to limit export size</li>
+            <li><strong>Status Filter:</strong> Filter by appointment status for specific reports</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

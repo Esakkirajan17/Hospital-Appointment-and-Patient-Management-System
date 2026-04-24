@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-2">Welcome, {{ current_user.full_name }}!</h2>
+                            <p class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Today is {{ now|date_ist }}
+                                {% if patient.date_of_birth %}
+                                | <i class="fas fa-birthday-cake me-2"></i>Age: {{ (today.year - patient.date_of_birth.year) }} years
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-user-circle fa-4x"></i>
+                            <p class="mb-0 mt-2">Patient ID: PAT{{ patient.id }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Upcoming Appointments</h6>
+                            <h3 class="mb-0">{{ appointments|length }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Prescriptions</h6>
+                            <h3 class="mb-0">{{ prescriptions|length }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-prescription-bottle fa-3x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Pending Payments</h6>
+                            <h3 class="mb-0">{{ pending_payments|length }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-rupee-sign fa-3x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Health Score</h6>
+                            <h3 class="mb-0">85%</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-heartbeat fa-3x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('book_appointment') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-plus me-2 text-primary"></i>
+                            Book New Appointment
+                        </a>
+                        <a href="{{ url_for('symptoms_checker') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-stethoscope me-2 text-info"></i>
+                            Symptoms Checker
+                        </a>
+                        <a href="{{ url_for('patient_lab_tests') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-flask me-2 text-success"></i>
+                            Book Lab Test
+                        </a>
+                        <a href="{{ url_for('upload_report') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-upload me-2 text-warning"></i>
+                            Upload Report
+                        </a>
+                        <a href="{{ url_for('patient_health_dashboard') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-line me-2 text-danger"></i>
+                            Health Dashboard
+                        </a>
+                        <a href="{{ url_for('patient_profile') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-edit me-2 text-secondary"></i>
+                            Update Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Tips -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Health Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div id="healthTips" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <p><i class="fas fa-tint me-2 text-primary"></i>Drink at least 8 glasses of water daily</p>
+                            </div>
+                            <div class="carousel-item">
+                                <p><i class="fas fa-apple-alt me-2 text-success"></i>Eat more fruits and vegetables</p>
+                            </div>
+                            <div class="carousel-item">
+                                <p><i class="fas fa-walking me-2 text-info"></i>Walk for 30 minutes every day</p>
+                            </div>
+                            <div class="carousel-item">
+                                <p><i class="fas fa-bed me-2 text-secondary"></i>Get 7-8 hours of sleep</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Appointments</h5>
+                    <a href="{{ url_for('patient_appointments') }}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Appointment #</th>
+                                        <th>Doctor</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in appointments %}
+                                    <tr>
+                                        <td>{{ app.appointment_number }}</td>
+                                        <td>{{ app.doctor.user.full_name|doctor_name }}</td>
+                                        <td>{{ app.appointment_date|date_ist }}</td>
+                                        <td>{{ app.appointment_time|time_12h }}</td>
+                                        <td>
+                                            {% if app.consultation_type == 'online' %}
+                                                <span class="badge bg-info">Online</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Offline</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if app.status == 'scheduled' else 'warning' }}">
+                                                {{ app.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('qr_display', appointment_id=app.id) }}" 
+                                                   class="btn btn-info" title="View QR Code">
+                                                    <i class="fas fa-qrcode"></i>
+                                                </a>
+                                                <form action="{{ url_for('cancel_appointment', appointment_id=app.id) }}" 
+                                                      method="POST" style="display: inline;">
+                                                    <button type="submit" class="btn btn-danger" 
+                                                            onclick="return confirm('Are you sure you want to cancel this appointment?')"
+                                                            title="Cancel Appointment">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                                <a href="{{ url_for('add_to_calendar', appointment_id=app.id) }}" 
+                                                   class="btn btn-secondary" title="Add to Calendar">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                            <p class="mb-3">No upcoming appointments</p>
+                            <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-2"></i>Book an Appointment
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pending Payments -->
+            {% if pending_payments %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5><i class="fas fa-rupee-sign me-2"></i>Pending Payments</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Appointment #</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in pending_payments %}
+                                <tr>
+                                    <td>{{ app.appointment_number }}</td>
+                                    <td>{{ app.doctor.user.full_name|doctor_name }}</td>
+                                    <td>{{ app.appointment_date|date_ist }}</td>
+                                    <td>₹{{ "%.2f"|format(app.fee_charged) }}</td>
+                                    <td>
+                                        <a href="{{ url_for('payment_qr_page', appointment_id=app.id) }}" 
+                                           class="btn btn-sm btn-success">
+                                            <i class="fas fa-qrcode me-1"></i>Pay Now
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Prescriptions -->
+            {% if prescriptions %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-prescription me-2"></i>Recent Prescriptions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for pres in prescriptions[:3] %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ pres.prescription_number }}</h6>
+                                    <small class="text-muted">{{ pres.doctor.user.full_name|doctor_name }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ pres.prescribed_date|date_ist }}</small>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('view_prescription_after_payment', appointment_id=pres.appointment_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                    <a href="{{ url_for('download_prescription', prescription_id=pres.id) }}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-download me-1"></i>PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if prescriptions|length > 3 %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('patient_prescriptions') }}" class="btn btn-sm btn-link">View All Prescriptions</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.stat-icon {
+    opacity: 0.7;
+}
+</style>
+{% endblock %}

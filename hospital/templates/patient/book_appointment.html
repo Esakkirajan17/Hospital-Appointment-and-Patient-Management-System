@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doctor-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #e0e0e0;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .doctor-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+    .doctor-card.selected {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #f0fff4 0%, #e8f5e9 100%);
+        box-shadow: 0 3px 10px rgba(40,167,69,0.2);
+    }
+    .doctor-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    .doctor-card.selected .doctor-name {
+        color: #28a745;
+    }
+    .slot-btn {
+        margin: 5px;
+        padding: 10px 15px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        min-width: 85px;
+        font-weight: 500;
+    }
+    .slot-btn:hover {
+        transform: translateY(-2px);
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    .slot-btn.selected {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+        color: white !important;
+        box-shadow: 0 2px 8px rgba(40,167,69,0.3);
+    }
+    .symptom-tag {
+        display: inline-block;
+        background-color: #e9ecef;
+        padding: 5px 12px;
+        margin: 3px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.85rem;
+    }
+    .symptom-tag:hover {
+        background-color: #007bff;
+        color: white;
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-header bg-primary text-white rounded-top-3">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> Book New Appointment</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="appointmentForm" action="{{ url_for('book_appointment') }}">
+                        <!-- Doctor Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold fs-5 mb-3">
+                                <i class="fas fa-user-md text-primary"></i> Select Doctor <span class="text-danger">*</span>
+                            </label>
+                            <div class="row" id="doctorList">
+                                {% for doctor in doctors %}
+                                <div class="col-md-6">
+                                    <div class="doctor-card card" data-doctor-id="{{ doctor.id }}" data-fee="{{ doctor.consultation_fee }}">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="doctor-info" data-doctor-id="{{ doctor.id }}">
+                                                    <div class="doctor-name">
+                                                        {{ doctor.user.full_name|doctor_name }}
+                                                    </div>
+                                                    <div class="specialization-badge d-inline-block mt-1">
+                                                        <i class="fas fa-stethoscope"></i> {{ doctor.specialization }}
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <span class="badge bg-secondary">{{ doctor.department }}</span>
+                                                        <span class="fee-badge ms-2">
+                                                            <i class="fas fa-rupee-sign"></i> {{ "%.0f"|format(doctor.consultation_fee) }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-star text-warning"></i> {{ doctor.rating or 4.5 }} ★
+                                                            <span class="ms-2"><i class="fas fa-briefcase"></i> {{ doctor.experience }} yrs exp</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="radio-container">
+                                                    <input type="radio" class="doctor-radio" name="doctor_id" value="{{ doctor.id }}" 
+                                                           id="doctor_{{ doctor.id }}" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-12">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> No doctors available at the moment.
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Appointment Details -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calendar-alt"></i> Appointment Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="appointment_date" id="appointment_date" 
+                                       min="{{ today }}" required>
+                                <small class="text-muted">Select a date for your appointment</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-headset"></i> Consultation Type <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="consultation_type" id="consultation_type" required>
+                                    <option value="offline">🏥 Offline (Visit Hospital)</option>
+                                    <option value="online">💻 Online Consultation (Chat/Phone)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Time Slots Section -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-clock"></i> Available Time Slots <span class="text-danger">*</span>
+                            </label>
+                            <div id="timeSlotsContainer" class="border rounded-3 p-3 bg-light" style="min-height: 150px;">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-clock fa-2x mb-2 d-block"></i>
+                                    Please select a doctor and date first
+                                </div>
+                            </div>
+                            <input type="hidden" name="appointment_time" id="selected_time" required>
+                        </div>
+
+                        <!-- Availability Status -->
+                        <div id="availabilityStatus" class="mb-3"></div>
+
+                        <!-- Symptoms with quick select tags -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-notes-medical"></i> Symptoms / Reason <span class="text-danger">*</span>
+                            </label>
+                            
+                            <!-- Quick symptom tags by department -->
+                            <div class="mb-2">
+                                <small class="text-muted">Quick select common symptoms:</small>
+                                <div class="mt-2">
+                                    <span class="symptom-tag" data-symptom="Fever, cough, cold, body aches">🤒 Fever/Cold/Flu</span>
+                                    <span class="symptom-tag" data-symptom="Chest pain, palpitations, shortness of breath">❤️ Chest Pain/Heart</span>
+                                    <span class="symptom-tag" data-symptom="Headache, dizziness, migraine, seizure">🧠 Headache/Neurology</span>
+                                    <span class="symptom-tag" data-symptom="Stomach pain, vomiting, diarrhea, acidity">🧬 Stomach/Digestion</span>
+                                    <span class="symptom-tag" data-symptom="Joint pain, back pain, fracture, muscle pain">🦴 Bone/Joint Pain</span>
+                                    <span class="symptom-tag" data-symptom="Skin rash, itching, allergy, acne">🧴 Skin/Allergy</span>
+                                    <span class="symptom-tag" data-symptom="Child fever, baby cough, pediatric issues">👶 Child/Pediatric</span>
+                                    <span class="symptom-tag" data-symptom="High BP, diabetes, thyroid">📊 BP/Diabetes</span>
+                                </div>
+                            </div>
+                            
+                            <textarea class="form-control" name="symptoms" id="symptoms" rows="4" 
+                                      placeholder="Describe your symptoms or reason for consultation in detail..." required></textarea>
+                            <small class="text-muted">Be as specific as possible for better diagnosis</small>
+                        </div>
+
+                        <!-- Department Recommendation -->
+                        <div id="deptRecommendation" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-stethoscope"></i> 
+                                <strong>Recommended Department:</strong> 
+                                <span id="recommendedDept"></span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                <i class="fas fa-check"></i> Book Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    let selectedDoctorId = null;
+    let selectedDate = null;
+    let selectedSlot = null;
+
+    // Quick symptom tags
+    $('.symptom-tag').click(function() {
+        const symptomText = $(this).data('symptom');
+        const currentText = $('#symptoms').val();
+        if (currentText) {
+            $('#symptoms').val(currentText + '\n' + symptomText);
+        } else {
+            $('#symptoms').val(symptomText);
+        }
+        $('#symptoms').trigger('input');
+        $(this).addClass('bg-primary text-white');
+        setTimeout(() => $(this).removeClass('bg-primary text-white'), 500);
+    });
+
+    // Doctor selection handlers
+    $('.doctor-info').click(function(e) {
+        e.stopPropagation();
+        const doctorCard = $(this).closest('.doctor-card');
+        const doctorId = $(this).data('doctor-id');
+        const radio = doctorCard.find('.doctor-radio');
+        
+        $('.doctor-card').removeClass('selected');
+        doctorCard.addClass('selected');
+        radio.prop('checked', true);
+        radio.trigger('change');
+    });
+
+    $('.doctor-card').click(function(e) {
+        if ($(e.target).hasClass('doctor-radio') || $(e.target).closest('.doctor-radio').length) {
+            return;
+        }
+        $('.doctor-card').removeClass('selected');
+        $(this).addClass('selected');
+        const radio = $(this).find('.doctor-radio');
+        radio.prop('checked', true);
+        radio.trigger('change');
+    });
+
+    $('.doctor-radio').change(function() {
+        selectedDoctorId = $(this).val();
+        $('.doctor-card').removeClass('selected');
+        $(this).closest('.doctor-card').addClass('selected');
+        
+        selectedSlot = null;
+        $('#selected_time').val('');
+        $('#submitBtn').prop('disabled', true);
+        
+        if (selectedDate) {
+            loadAvailableSlots();
+        } else {
+            $('#timeSlotsContainer').html(`
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-calendar-alt fa-2x mb-2 d-block"></i>
+                    Please select a date to see available slots
+                </div>
+            `);
+        }
+    });
+
+    $('#appointment_date').change(function() {
+        selectedDate = $(this).val();
+        selectedSlot = null;
+        $('#selected_time').val('');
+        $('#submitBtn').prop('disabled', true);
+        
+        if (selectedDoctorId && selectedDate) {
+            loadAvailableSlots();
+        } else if (selectedDate && !selectedDoctorId) {
+            $('#timeSlotsContainer').html(`
+                <div class="text-center text-warning py-4">
+                    <i class="fas fa-user-md fa-2x mb-2 d-block"></i>
+                    Please select a doctor first
+                </div>
+            `);
+        }
+    });
+
+    function loadAvailableSlots() {
+        if (!selectedDoctorId || !selectedDate) return;
+
+        $('#availabilityStatus').html(`
+            <div class="alert alert-info">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    <span>Checking availability...</span>
+                </div>
+            </div>
+        `);
+
+        $.ajax({
+            url: '/api/available-slots',
+            method: 'GET',
+            data: { doctor_id: selectedDoctorId, date: selectedDate },
+            success: function(response) {
+                if (response.success && response.available_slots && response.available_slots.length > 0) {
+                    const slots = response.available_slots;
+                    $('#availabilityStatus').html(`
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> ${slots.length} time slots available!
+                        </div>
+                    `);
+                    
+                    let slotsHtml = '<div class="d-flex flex-wrap justify-content-center gap-2">';
+                    slots.forEach(function(slot) {
+                        slotsHtml += `<button type="button" class="btn btn-outline-primary slot-btn" data-slot="${slot}">${slot}</button>`;
+                    });
+                    slotsHtml += '</div>';
+                    $('#timeSlotsContainer').html(slotsHtml);
+                    
+                    $('.slot-btn').click(function() {
+                        $('.slot-btn').removeClass('selected btn-primary').addClass('btn-outline-primary');
+                        $(this).addClass('selected btn-primary').removeClass('btn-outline-primary');
+                        selectedSlot = $(this).data('slot');
+                        $('#selected_time').val(selectedSlot);
+                        $('#submitBtn').prop('disabled', false);
+                    });
+                } else {
+                    $('#availabilityStatus').html(`
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> No slots available on this date.
+                        </div>
+                    `);
+                    $('#timeSlotsContainer').html('<div class="text-center py-4">No time slots available</div>');
+                }
+            },
+            error: function() {
+                $('#availabilityStatus').html(`<div class="alert alert-danger">Error loading slots. Please try again.</div>`);
+            }
+        });
+    }
+
+    // Symptoms recommendation
+    const departmentMap = {
+        'fever,cough,cold,flu,body ache,throat': 'General Medicine',
+        'chest pain,heart,palpitation,high bp,blood pressure': 'Cardiology',
+        'headache,migraine,dizziness,seizure,vertigo': 'Neurology',
+        'stomach pain,vomiting,diarrhea,acidity,indigestion': 'Gastroenterology',
+        'joint pain,back pain,fracture,muscle pain,arthritis': 'Orthopedics',
+        'skin rash,itching,allergy,acne,hives': 'Dermatology',
+        'child fever,baby cough,pediatric,infant': 'Pediatrics',
+        'diabetes,thyroid,blood sugar,weight loss': 'Endocrinology'
+    };
+    
+    $('#symptoms').on('input', function() {
+        const symptoms = $(this).val().toLowerCase();
+        let recommendedDept = 'General Medicine';
+        
+        for (const [keywords, dept] of Object.entries(departmentMap)) {
+            const keywordList = keywords.split(',');
+            for (const keyword of keywordList) {
+                if (symptoms.includes(keyword)) {
+                    recommendedDept = dept;
+                    break;
+                }
+            }
+        }
+        
+        if (symptoms.length > 10) {
+            $('#deptRecommendation').show();
+            $('#recommendedDept').text(recommendedDept);
+        } else {
+            $('#deptRecommendation').hide();
+        }
+    });
+
+    $('#appointmentForm').submit(function(e) {
+        if (!$('#selected_time').val()) {
+            e.preventDefault();
+            alert('Please select a time slot');
+            return false;
+        }
+        if (!$('#symptoms').val().trim()) {
+            e.preventDefault();
+            alert('Please describe your symptoms');
+            return false;
+        }
+        return true;
+    });
+});
+</script>
+{% endblock %}

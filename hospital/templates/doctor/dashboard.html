@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-2">Welcome, {{ current_user.full_name }}!</h2>
+                            <p class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>{{ now|date_ist }} | 
+                                <i class="fas fa-stethoscope me-2"></i>{{ doctor.specialization }}
+                            </p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-user-md fa-4x"></i>
+                            <p class="mb-0 mt-2">Doctor ID: DOC{{ doctor.id }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Today's Appointments</h6>
+                            <h3 class="mb-0">{{ today_appointments|length }}</h3>
+                            <small class="text-success">
+                                <i class="fas fa-video me-1"></i>{{ today_online }} Online | 
+                                <i class="fas fa-building me-1"></i>{{ today_offline }} Offline
+                            </small>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Patients</h6>
+                            <h3 class="mb-0">{{ completed_count }}</h3>
+                            <small class="text-muted">Completed consultations</small>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users fa-3x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Revenue</h6>
+                            <h3 class="mb-0">₹{{ "%.0f"|format(total_revenue) }}</h3>
+                            <small class="text-muted">From completed consultations</small>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-rupee-sign fa-3x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Rating</h6>
+                            <h3 class="mb-0">{{ "%.1f"|format(doctor.rating) }} <i class="fas fa-star text-warning"></i></h3>
+                            <small class="text-muted">Patient satisfaction</small>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-star fa-3x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('doctor_queue') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            View Patient Queue
+                            {% if today_appointments|length > 0 %}
+                                <span class="badge bg-primary float-end">{{ today_appointments|length }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('doctor_appointments') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-alt me-2 text-info"></i>
+                            All Appointments
+                        </a>
+                        <a href="{{ url_for('doctor_prescriptions') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-prescription me-2 text-success"></i>
+                            My Prescriptions
+                        </a>
+                        <a href="{{ url_for('doctor_patient_reports') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-medical me-2 text-info"></i>
+                            Patient Reports
+                        </a>
+                        <a href="{{ url_for('doctor_profile') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-edit me-2 text-secondary"></i>
+                            Update Profile
+                        </a>
+                        <a href="{{ url_for('doctor_schedule') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-week me-2 text-warning"></i>
+                            View Schedule
+                        </a>
+                        <a href="{{ url_for('request_leave') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-umbrella-beach me-2 text-danger"></i>
+                            Request Leave
+                        </a>
+                        <a href="{{ url_for('doctor_feedbacks') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-star me-2 text-warning"></i>
+                            View Feedback
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-clock me-2"></i>Today's Schedule</h5>
+                </div>
+                <div class="card-body">
+                    {% if today_schedule %}
+                        <p><strong>Working Hours:</strong> {{ today_schedule.start_time }} - {{ today_schedule.end_time }}</p>
+                        <p><strong>Slot Duration:</strong> {{ today_schedule.slot_duration }} minutes</p>
+                        <p class="mb-0 text-success">
+                            <i class="fas fa-check-circle me-1"></i> Available for consultations
+                        </p>
+                    {% else %}
+                        <p class="text-muted">No schedule set for today</p>
+                        <small class="text-warning">Please contact admin to set your schedule</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Appointments -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-clock me-2"></i>Today's Appointments</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="filterAppointments('all')">All</button>
+                        <button class="btn btn-outline-info" onclick="filterAppointments('online')">Online</button>
+                        <button class="btn btn-outline-success" onclick="filterAppointments('offline')">Offline</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if today_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="appointmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Patient Name</th>
+                                        <th>Type</th>
+                                        <th>Symptoms</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in today_appointments %}
+                                    <tr class="appointment-row" data-type="{{ app.consultation_type }}">
+                                        <td><strong>{{ app.appointment_time|time_12h }}</strong></td>
+                                        <td>{{ app.patient.user.full_name }}</td>
+                                        <td>
+                                            {% if app.consultation_type == 'online' %}
+                                                <span class="badge bg-info">Online</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Offline</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ app.symptoms[:40] }}{% if app.symptoms|length > 40 %}...{% endif %}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if app.status == 'completed' else 'warning' if app.status == 'scheduled' else 'secondary' }}">
+                                                {{ app.status|upper }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                {% if app.status == 'scheduled' %}
+                                                    <a href="{{ url_for('update_record', appointment_id=app.id) }}" 
+                                                       class="btn btn-primary" title="Start Consultation">
+                                                        <i class="fas fa-stethoscope"></i> Start
+                                                    </a>
+                                                {% elif app.status == 'completed' %}
+                                                    <a href="{{ url_for('view_prescription_after_payment', appointment_id=app.id) }}" 
+                                                       class="btn btn-info" title="View Prescription">
+                                                        <i class="fas fa-prescription"></i> View Rx
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                            <p class="mb-3">No appointments scheduled for today</p>
+                            <small class="text-muted">Check back later or contact admin</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            {% if upcoming_appointments %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Appointments</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Type</th>
+                                    <th>Symptoms</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in upcoming_appointments %}
+                                <tr>
+                                    <td>{{ app.appointment_date|date_ist }}</td>
+                                    <td>{{ app.appointment_time|time_12h }}</td>
+                                    <td>{{ app.patient.user.full_name }}</td>
+                                    <td>
+                                        {% if app.consultation_type == 'online' %}
+                                            <span class="badge bg-info">Online</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Offline</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ app.symptoms[:30] }}...</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if upcoming_appointments|length > 5 %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('doctor_appointments') }}" class="btn btn-sm btn-link">View All Appointments</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.stat-icon {
+    opacity: 0.7;
+}
+.appointment-row {
+    transition: background-color 0.2s;
+}
+.appointment-row:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+</style>
+
+<script>
+    function filterAppointments(type) {
+        const rows = document.querySelectorAll('.appointment-row');
+        rows.forEach(row => {
+            if (type === 'all') {
+                row.style.display = '';
+            } else {
+                if (row.getAttribute('data-type') === type) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

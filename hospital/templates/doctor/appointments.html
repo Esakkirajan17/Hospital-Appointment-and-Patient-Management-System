@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<h2 class="mb-4"><i class="fas fa-calendar-alt me-2 text-primary"></i>All Appointments</h2>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Appointment History</h5>
+    </div>
+    <div class="card-body">
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Appt #</th>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Symptoms</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in appointments %}
+                    <tr>
+                        <td><code>{{ app.appointment_number }}</code></td>
+                        <td>{{ app.patient.user.full_name }}</td>
+                        <td>{{ app.appointment_date|date_ist }}</td>
+                        <td>{{ app.appointment_time|time_12h }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if app.consultation_type == 'online' else 'primary' }}">
+                                {{ app.consultation_type|upper }}
+                            </span>
+                        </td>
+                        <td>{{ app.symptoms[:30] }}...</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if app.status == 'completed' else 'warning' if app.status == 'scheduled' else 'danger' }}">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if app.status == 'scheduled' %}
+                            <a href="{{ url_for('update_record', appointment_id=app.id) }}" 
+                               class="btn btn-sm btn-primary">
+                                Consult
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center py-4">No appointments found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

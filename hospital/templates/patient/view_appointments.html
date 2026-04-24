@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-calendar-alt me-2 text-primary"></i>My Appointments</h2>
+        <p class="text-muted">View all your appointment history</p>
+    </div>
+</div>
+
+<!-- Working Hours Info -->
+<div class="alert alert-info mb-4">
+    <i class="fas fa-clock me-2"></i>
+    <strong>Consultation Hours:</strong> 9:00 AM to 9:00 PM (IST)
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Appointment History</h5>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Appointment #</th>
+                                <th>Type</th>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Symptoms</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in appointments %}
+                            <tr>
+                                <td><code>{{ app.appointment_number }}</code></td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if app.consultation_type == 'online' else 'primary' }}">
+                                        <i class="fas fa-{{ 'video' if app.consultation_type == 'online' else 'hospital' }} me-1"></i>
+                                        {{ app.consultation_type|upper }}
+                                    </span>
+                                </td>
+                                <td>{{ app.doctor.user.full_name|doctor_name }}</td>
+                                <td>{{ app.appointment_date|date_ist }}</td>
+                                <td>
+                                    <span class="time-12h" data-time="{{ app.appointment_time }}">
+                                        {{ app.appointment_time|time_12h }}
+                                    </span>
+                                </td>
+                                <td>{{ app.symptoms[:30] }}...</td>
+                                <td>₹{{ "%.0f"|format(app.fee_charged) }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if app.status == 'completed' else 'warning' if app.status == 'scheduled' else 'danger' }}">
+                                        {{ app.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if app.status == 'scheduled' and app.appointment_date >= now.date() %}
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('add_to_calendar', appointment_id=app.id) }}" 
+                                           class="btn btn-outline-danger" target="_blank" title="Add to Google Calendar">
+                                            <i class="fab fa-google"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=app.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-outline-danger" 
+                                                    onclick="return confirm('Are you sure you want to cancel this appointment?')"
+                                                    title="Cancel Appointment">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                    {% if app.status == 'completed' and not app.feedback %}
+                                    <a href="{{ url_for('leave_feedback', appointment_id=app.id) }}" 
+                                       class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-star me-1"></i>Rate
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h4>No Appointments Found</h4>
+                    <p class="text-muted">You haven't booked any appointments yet.</p>
+                    <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">
+                        <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

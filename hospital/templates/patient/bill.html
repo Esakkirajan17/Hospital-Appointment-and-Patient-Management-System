@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Bill Details{% endblock %}
+
+{% block styles %}
+<style>
+    .bill-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .bill-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    [data-bs-theme="dark"] .bill-card {
+        background: #2c3034;
+        border: 1px solid #444;
+    }
+    
+    .bill-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px dashed #dee2e6;
+    }
+    
+    [data-bs-theme="dark"] .bill-header {
+        border-bottom-color: #444;
+    }
+    
+    .hospital-name {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #3498db;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bill-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .bill-details {
+        margin-bottom: 2rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    [data-bs-theme="dark"] .detail-row {
+        border-bottom-color: #444;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+    
+    .detail-value {
+        font-weight: 500;
+    }
+    
+    .amount-table {
+        margin: 2rem 0;
+    }
+    
+    .amount-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+    }
+    
+    .amount-row.total {
+        border-top: 2px solid #3498db;
+        margin-top: 1rem;
+        padding-top: 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .paid-stamp {
+        text-align: center;
+        margin: 2rem 0;
+    }
+    
+    .paid-badge {
+        display: inline-block;
+        padding: 0.5rem 2rem;
+        background: #27ae60;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        transform: rotate(-5deg);
+    }
+    
+    .bill-footer {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    [data-bs-theme="dark"] .bill-footer {
+        border-top-color: #444;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .bill-card {
+            box-shadow: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bill-container">
+    <div class="bill-card">
+        <!-- Bill Header -->
+        <div class="bill-header">
+            <div class="hospital-name">
+                <i class="fas fa-hospital me-2"></i>HMS Hospital
+            </div>
+            <p>123 Healthcare Avenue, Medical District<br>
+            Phone: +91 9876543210 | GST: 27ABCDE1234F1Z5</p>
+            <div class="bill-title">TAX INVOICE</div>
+        </div>
+        
+        <!-- Bill Details -->
+        <div class="bill-details">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="mb-3">Bill To:</h6>
+                    <p class="mb-1"><strong>{{ bill.patient.user.full_name }}</strong></p>
+                    <p class="mb-1">Patient ID: P{{ "%04d" % bill.patient.id }}</p>
+                    <p class="mb-1">Email: {{ bill.patient.user.email }}</p>
+                    <p class="mb-1">Phone: {{ bill.patient.user.phone or 'N/A' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="mb-3">Invoice Details:</h6>
+                    <div class="detail-row">
+                        <span class="detail-label">Bill Number:</span>
+                        <span class="detail-value"><strong>{{ bill.bill_number }}</strong></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Bill Date:</span>
+                        <span class="detail-value">{{ bill.bill_date.strftime('%d-%m-%Y %H:%M') }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Method:</span>
+                        <span class="detail-value">{{ bill.payment_method|upper }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Status:</span>
+                        <span class="detail-value text-success">{{ bill.payment_status|upper }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appointment Details -->
+        <div class="bill-details mt-4">
+            <h6 class="mb-3">Appointment Details:</h6>
+            <div class="detail-row">
+                <span class="detail-label">Appointment Number:</span>
+                <span class="detail-value"><code>{{ bill.appointment.appointment_number }}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Doctor:</span>
+                <span class="detail-value">{{ bill.appointment.doctor.user.full_name|doctor_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Specialization:</span>
+                <span class="detail-value">{{ bill.appointment.doctor.specialization }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Consultation Date:</span>
+                <span class="detail-value">{{ bill.appointment.appointment_date|date_ist }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Consultation Time:</span>
+                <span class="detail-value">{{ bill.appointment.appointment_time|time_12h }}</span>
+            </div>
+        </div>
+        
+        <!-- Amount Breakdown -->
+        <div class="amount-table">
+            <h6 class="mb-3">Amount Breakdown:</h6>
+            <div class="amount-row">
+                <span>Consultation Fee</span>
+                <span>₹{{ "%.2f"|format(bill.consultation_fee) }}</span>
+            </div>
+            <div class="amount-row">
+                <span>GST (18%)</span>
+                <span>₹{{ "%.2f"|format(bill.tax_amount) }}</span>
+            </div>
+            {% if bill.discount > 0 %}
+            <div class="amount-row">
+                <span>Discount</span>
+                <span>-₹{{ "%.2f"|format(bill.discount) }}</span>
+            </div>
+            {% endif %}
+            <div class="amount-row total">
+                <span>Total Amount</span>
+                <span>₹{{ "%.2f"|format(bill.total_amount) }}</span>
+            </div>
+        </div>
+        
+        <!-- Paid Stamp -->
+        <div class="paid-stamp">
+            <span class="paid-badge">
+                <i class="fas fa-check-circle me-2"></i>PAID
+            </span>
+        </div>
+        
+        <!-- Transaction Details -->
+        <div class="bill-details mt-4">
+            <h6 class="mb-3">Transaction Details:</h6>
+            <div class="detail-row">
+                <span class="detail-label">Transaction ID:</span>
+                <span class="detail-value"><code>{{ bill.appointment.payment.payment_id if bill.appointment.payment else 'N/A' }}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Transaction Date:</span>
+                <span class="detail-value">{{ bill.appointment.payment.transaction_date.strftime('%d-%m-%Y %H:%M') if bill.appointment.payment else 'N/A' }}</span>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="bill-footer">
+            <p class="mb-1">This is a computer generated invoice - valid without signature</p>
+            <p class="mb-0">Thank you for choosing HMS Hospital</p>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="action-buttons no-print mt-4">
+        <a href="{{ url_for('download_bill', bill_id=bill.id) }}" class="btn btn-success">
+            <i class="fas fa-download me-2"></i>Download PDF
+        </a>
+        <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-home me-2"></i>Dashboard
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print me-2"></i>Print
+        </button>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}My Prescriptions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-prescription-bottle me-2"></i>My Prescriptions</h4>
+                </div>
+                <div class="card-body">
+                    {% if prescriptions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Prescription #</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Diagnosis</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prescription in prescriptions %}
+                                <tr>
+                                    <td><strong>{{ prescription.prescription_number }}</strong></td>
+                                    <td>{{ prescription.doctor.user.full_name|doctor_name }}</td>
+                                    <td>{{ prescription.prescribed_date|date_ist }}</td>
+                                    <td>{{ prescription.diagnosis[:50] }}{% if prescription.diagnosis|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('view_prescription_after_payment', appointment_id=prescription.appointment_id) }}" 
+                                               class="btn btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                                            <a href="{{ url_for('download_prescription', prescription_id=prescription.id) }}" 
+                                               class="btn btn-outline-success">
+                                                <i class="fas fa-download me-1"></i>PDF
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-prescription-bottle fa-4x text-muted mb-3"></i>
+                        <h4>No Prescriptions Yet</h4>
+                        <p class="text-muted">You don't have any prescriptions at the moment.</p>
+                        <p class="text-muted">Prescriptions will appear here after your consultations are completed and payment is made.</p>
+                        <a href="{{ url_for('book_appointment') }}" class="btn btn-primary mt-3">
+                            <i class="fas fa-calendar-plus me-2"></i>Book an Appointment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

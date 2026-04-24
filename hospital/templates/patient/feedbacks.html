@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}My Feedback{% endblock %}
+
+{% block styles %}
+<style>
+    .rating-stars {
+        color: #f2b600;
+        font-size: 1.2rem;
+    }
+    .feedback-card {
+        transition: all 0.3s;
+    }
+    .feedback-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-star me-2 text-warning"></i>Patient Feedback</h2>
+
+<!-- Rating Summary -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h6>Average Rating</h6>
+                <h2 class="display-4">{{ "%.1f"|format(avg_rating) }}</h2>
+                <div class="rating-stars">
+                    {% for i in range(5) %}
+                        {% if i < avg_rating|round %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h6>Total Feedbacks</h6>
+                <h2 class="display-4">{{ total }}</h2>
+                <i class="fas fa-comments fa-2x mt-2"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h6>Recommendation Rate</h6>
+                <h2 class="display-4">
+                    {% if feedbacks %}
+                        {{ (feedbacks|selectattr('recommended', 'equalto', true)|list|length / total * 100)|round }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h2>
+                <i class="fas fa-thumbs-up fa-2x mt-2"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">All Patient Feedback</h5>
+            </div>
+            <div class="card-body">
+                {% if feedbacks %}
+                    {% for feedback in feedbacks %}
+                    <div class="card feedback-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">{{ feedback.patient.user.full_name }}</h6>
+                                    <div class="rating-stars mb-2">
+                                        {% for i in range(5) %}
+                                            {% if i < feedback.rating %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <p class="mb-2">{{ feedback.comment }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>Waiting time: {{ feedback.waiting_time }} mins
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{{ 'success' if feedback.recommended else 'secondary' }} mb-2">
+                                        {% if feedback.recommended %}
+                                            <i class="fas fa-thumbs-up me-1"></i>Recommended
+                                        {% else %}
+                                            Not Recommended
+                                        {% endif %}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">{{ feedback.created_at.strftime('%d-%m-%Y') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-4">No feedback received yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

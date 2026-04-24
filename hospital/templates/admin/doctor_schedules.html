@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Schedules{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-clock me-2 text-primary"></i>Doctor Schedules</h2>
+
+<div class="row">
+    {% for doctor in doctors %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ doctor.user.full_name|doctor_name }}</h5>
+                <small>{{ doctor.specialization }}</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Time</th>
+                            </thead>
+                        <tbody>
+                            {% for day in range(7) %}
+                            {% set schedule = doctor.schedules|selectattr('day_of_week', 'equalto', day)|first %}
+                            <tr>
+                                <td>{{ days[day] }}</td>
+                                <td>
+                                    {% if schedule %}
+                                    {{ schedule.start_time|time_12h }} - {{ schedule.end_time|time_12h }}
+                                    ({{ schedule.slot_duration }} min)
+                                    {% else %}
+                                    <span class="text-muted">Not Available</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="{{ url_for('edit_doctor_schedule', doctor_id=doctor.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Schedule
+                    </a>
+                    <a href="{{ url_for('add_doctor_leave', doctor_id=doctor.id) }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-calendar-times me-2"></i>Add Leave
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

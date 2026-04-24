@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Admin Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <span class="text-muted">Welcome back, {{ current_user.full_name }}</span>
+        </div>
+    </div>
+
+    <!-- Stats Cards Row 1 -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Patients</h6>
+                            <h2 class="mb-0">{{ stats.get('total_patients', 0) }}</h2>
+                        </div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Doctors</h6>
+                            <h2 class="mb-0">{{ stats.get('total_doctors', 0) }}</h2>
+                        </div>
+                        <i class="fas fa-user-md fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Appointments</h6>
+                            <h2 class="mb-0">{{ stats.get('total_appointments', 0) }}</h2>
+                        </div>
+                        <i class="fas fa-calendar-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Today's Appointments</h6>
+                            <h2 class="mb-0">{{ stats.get('today_appointments', 0) }}</h2>
+                        </div>
+                        <i class="fas fa-calendar-day fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards Row 2 -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Online/Offline</h6>
+                            <h2 class="mb-0">{{ stats.get('online_count', 0) }}/{{ stats.get('offline_count', 0) }}</h2>
+                            <small>Online/Offline Appointments</small>
+                        </div>
+                        <i class="fas fa-video fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Revenue</h6>
+                            <h2 class="mb-0">₹{{ "%.2f"|format(stats.get('total_revenue', 0)) }}</h2>
+                        </div>
+                        <i class="fas fa-rupee-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Lab Tests</h6>
+                            <h2 class="mb-0">{{ stats.get('active_lab_tests', 0) }}/{{ stats.get('total_lab_tests', 0) }}</h2>
+                            <small>Active/Total</small>
+                        </div>
+                        <i class="fas fa-flask fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Pending Reports</h6>
+                            <h2 class="mb-0">{{ stats.get('pending_reports', 0) }}</h2>
+                        </div>
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS SECTION -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-users fa-2x d-block mb-2"></i>
+                                Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_appointments') }}" class="btn btn-outline-success w-100 py-3">
+                                <i class="fas fa-calendar-alt fa-2x d-block mb-2"></i>
+                                View Appointments
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_lab_tests') }}" class="btn btn-outline-info w-100 py-3">
+                                <i class="fas fa-flask fa-2x d-block mb-2"></i>
+                                Manage Lab Tests
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_doctor_schedules') }}" class="btn btn-outline-warning w-100 py-3">
+                                <i class="fas fa-clock fa-2x d-block mb-2"></i>
+                                Doctor Schedules
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_analytics') }}" class="btn btn-outline-danger w-100 py-3">
+                                <i class="fas fa-chart-line fa-2x d-block mb-2"></i>
+                                Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('export_appointments', format='excel') }}" class="btn btn-outline-secondary w-100 py-3">
+                                <i class="fas fa-file-excel fa-2x d-block mb-2"></i>
+                                Export Data
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_lab_bookings') }}" class="btn btn-outline-dark w-100 py-3">
+                                <i class="fas fa-tasks fa-2x d-block mb-2"></i>
+                                Lab Bookings
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_advanced_analytics') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-chart-pie fa-2x d-block mb-2"></i>
+                                Advanced Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Status Row -->
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-clock"></i> Scheduled
+                </div>
+                <div class="card-body text-center">
+                    <h3>{{ stats.get('scheduled_appointments', 0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-check-circle"></i> Completed
+                </div>
+                <div class="card-body text-center">
+                    <h3>{{ stats.get('completed_appointments', 0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-times-circle"></i> Cancelled
+                </div>
+                <div class="card-body text-center">
+                    <h3>{{ stats.get('cancelled_appointments', 0) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Appointments Table -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-history"></i> Recent Appointments
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in appointments %}
+                                <tr>
+                                    <td>{{ app.appointment_number }}</td>
+                                    <td>{{ app.patient.user.full_name if app.patient else 'N/A' }}</td>
+                                    <td>{{ (app.doctor.user.full_name|doctor_name) if app.doctor else 'N/A' }}</td>
+                                    <td>{{ app.appointment_date.strftime('%d-%m-%Y') if app.appointment_date else 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if app.status == 'completed' else 'warning' if app.status == 'scheduled' else 'danger' }}">
+                                            {{ app.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-info">View</a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No appointments found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie"></i> Dept Distribution
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for dept in stats.get('dept_appointments', []) %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ dept[0] or 'General Medicine' }}
+                            <span class="badge bg-primary rounded-pill">{{ dept[1] }}</span>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted">No department data available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

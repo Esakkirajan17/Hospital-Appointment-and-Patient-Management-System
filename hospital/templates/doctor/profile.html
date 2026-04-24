@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Profile{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-md me-2"></i>Doctor Profile</h4>
+            </div>
+            <div class="card-body">
+                <!-- Profile Header -->
+                <div class="row mb-4">
+                    <div class="col-md-3 text-center">
+                        <div class="bg-light rounded-circle p-3 d-inline-block mb-3">
+                            <i class="fas fa-user-md fa-4x text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <h3>{{ current_user.full_name|doctor_name }}</h3>
+                        <p class="text-muted">
+                            <i class="fas fa-envelope me-2"></i>{{ current_user.email }}<br>
+                            <i class="fas fa-phone me-2"></i>{{ current_user.phone or 'Not added' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fee Status Alert -->
+                <div class="alert {% if doctor.consultation_fee > 0 %}alert-success{% else %}alert-danger{% endif %} mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas {% if doctor.consultation_fee > 0 %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} fa-2x me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">
+                                {% if doctor.consultation_fee > 0 %}
+                                    Current Consultation Fee: ₹{{ "%.2f"|format(doctor.consultation_fee) }}
+                                {% else %}
+                                    Consultation Fee Not Set
+                                {% endif %}
+                            </h5>
+                            <p class="mb-0">
+                                {% if doctor.consultation_fee > 0 %}
+                                    Patients can now book appointments with you.
+                                {% else %}
+                                    ⚠️ You must set a consultation fee before patients can book appointments.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Update Form -->
+                <form method="POST" class="mt-4">
+                    <h5 class="mb-3">Professional Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" class="form-control" name="specialization" 
+                                   value="{{ doctor.specialization or '' }}" placeholder="e.g., Cardiologist">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Qualification</label>
+                            <input type="text" class="form-control" name="qualification" 
+                                   value="{{ doctor.qualification or '' }}" placeholder="e.g., MD, DM">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Experience (years)</label>
+                            <input type="number" class="form-control" name="experience" 
+                                   value="{{ doctor.experience or '' }}" placeholder="e.g., 10">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Consultation Fee (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" name="consultation_fee" 
+                                       value="{{ doctor.consultation_fee or '' }}" step="50" min="0"
+                                       placeholder="e.g., 500" required>
+                            </div>
+                            <small class="text-muted">Set your consultation fee. Patients can only book if fee is set.</small>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Availability</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Available Days</label>
+                            <input type="text" class="form-control" name="available_days" 
+                                   value="{{ doctor.available_days or '' }}" placeholder="e.g., Mon,Wed,Fri">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Available Time</label>
+                            <input type="text" class="form-control" name="available_time" 
+                                   value="{{ doctor.available_time or '' }}" placeholder="e.g., 10:00-16:00">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bio / Description</label>
+                        <textarea class="form-control" name="bio" rows="4" 
+                                  placeholder="Tell patients about yourself...">{{ doctor.bio or '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Update Profile
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Statistics -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="mb-0">{{ doctor.appointments|length }}</h5>
+                                <small class="text-muted">Total Appointments</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="mb-0">{{ doctor.consultation_fee|default(0) }}</h5>
+                                <small class="text-muted">Current Fee (₹)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="mb-0">{{ doctor.experience|default(0) }}</h5>
+                                <small class="text-muted">Years Experience</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

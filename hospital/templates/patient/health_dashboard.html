@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Health Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <h3><i class="fas fa-heartbeat me-2"></i>Health Dashboard</h3>
+                    <p class="mb-0">Track your health metrics and wellness journey</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Score Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="health-score-circle mb-3">
+                        <div class="score-value">{{ health_score }}</div>
+                        <div class="score-label">Health Score</div>
+                    </div>
+                    <h4 class="text-{{ color }}">{{ grade }}</h4>
+                    <p class="text-muted">Overall health assessment</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="fas fa-chart-line me-2 text-primary"></i>BMI</h5>
+                    {% if bmi %}
+                        <h2 class="mb-2">{{ "%.1f"|format(bmi) }}</h2>
+                        <span class="badge bg-{{ 'success' if bmi_category == 'Normal' else 'warning' }}">{{ bmi_category }}</span>
+                    {% else %}
+                        <p class="text-muted">Add height and weight to calculate BMI</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="fas fa-calendar-alt me-2 text-info"></i>Last Checkup</h5>
+                    {% if metrics %}
+                        <h4>{{ metrics[0].recorded_date|date_ist }}</h4>
+                        <p class="text-muted">Most recent health metrics</p>
+                    {% else %}
+                        <p class="text-muted">No health data recorded yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Factors -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list-check me-2"></i>Health Factors Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Factor</th>
+                                    <th>Impact</th>
+                                    <th>Suggestion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for factor in health_factors %}
+                                <tr>
+                                    <td>{{ factor.issue }}</td>
+                                    <td>
+                                        {% if factor.impact < 0 %}
+                                            <span class="text-danger">-{{ factor.impact|abs }}</span>
+                                        {% elif factor.impact == 0 %}
+                                            <span class="text-success">✓</span>
+                                        {% else %}
+                                            <span class="text-success">+{{ factor.impact }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ factor.suggestion }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Metrics Chart -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line me-2"></i>Health Metrics Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="healthMetricsChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Metrics Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-table me-2"></i>Recent Health Metrics</h5>
+                    <a href="{{ url_for('add_health_metric') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Metric
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if metrics %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>BP (Systolic)</th>
+                                    <th>BP (Diastolic)</th>
+                                    <th>Heart Rate</th>
+                                    <th>Blood Sugar</th>
+                                    <th>Weight</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for metric in metrics %}
+                                <tr>
+                                    <td>{{ metric.recorded_date|date_ist }}</td>
+                                    <td>{{ metric.blood_pressure_systolic or '-' }}</td>
+                                    <td>{{ metric.blood_pressure_diastolic or '-' }}</td>
+                                    <td>{{ metric.heart_rate or '-' }}</td>
+                                    <td>{{ metric.blood_sugar or '-' }}</td>
+                                    <td>{{ metric.weight or '-' }}</td>
+                                    <td>
+                                        <form action="{{ url_for('delete_health_metric', metric_id=metric.id) }}" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this metric?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                        <p>No health metrics recorded yet.</p>
+                        <a href="{{ url_for('add_health_metric') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Your First Health Metric
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.health-score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+}
+.score-value {
+    font-size: 48px;
+    font-weight: bold;
+}
+.score-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prepare data for chart using metrics_data
+    const metricsData = {{ metrics_data|tojson }};
+    
+    if (metricsData && metricsData.length > 0) {
+        // Reverse to get chronological order
+        const sortedData = metricsData.slice().reverse();
+        
+        const labels = sortedData.map(m => {
+            const date = new Date(m.recorded_date);
+            return date.toLocaleDateString();
+        });
+        
+        const bpData = sortedData.map(m => m.blood_pressure_systolic).filter(v => v);
+        const hrData = sortedData.map(m => m.heart_rate).filter(v => v);
+        const bsData = sortedData.map(m => m.blood_sugar).filter(v => v);
+        
+        const ctx = document.getElementById('healthMetricsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Blood Pressure (Systolic)',
+                        data: bpData,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Heart Rate',
+                        data: hrData,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Blood Sugar',
+                        data: bsData,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

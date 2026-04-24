@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Doctor Schedule{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Edit Schedule - Dr. {{ doctor.user.full_name }}</h4>
+            </div>
+            <div class="card-body">
+                <!-- Working Hours Info -->
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-clock me-2"></i>
+                    <strong>Hospital Working Hours:</strong> 9:00 AM to 9:00 PM (IST)
+                </div>
+                
+                <form method="POST" id="scheduleForm">
+                    {% for day in range(7) %}
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0">{{ days[day] }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Start Time (AM/PM)</label>
+                                    <select class="form-select" name="start_{{ day }}" id="start_{{ day }}">
+                                        <option value="">Not Available</option>
+                                        <option value="09:00" {% if schedules[day] and schedules[day].start_time == "09:00" %}selected{% endif %}>09:00 AM</option>
+                                        <option value="09:30" {% if schedules[day] and schedules[day].start_time == "09:30" %}selected{% endif %}>09:30 AM</option>
+                                        <option value="10:00" {% if schedules[day] and schedules[day].start_time == "10:00" %}selected{% endif %}>10:00 AM</option>
+                                        <option value="10:30" {% if schedules[day] and schedules[day].start_time == "10:30" %}selected{% endif %}>10:30 AM</option>
+                                        <option value="11:00" {% if schedules[day] and schedules[day].start_time == "11:00" %}selected{% endif %}>11:00 AM</option>
+                                        <option value="11:30" {% if schedules[day] and schedules[day].start_time == "11:30" %}selected{% endif %}>11:30 AM</option>
+                                        <option value="12:00" {% if schedules[day] and schedules[day].start_time == "12:00" %}selected{% endif %}>12:00 PM</option>
+                                        <option value="12:30" {% if schedules[day] and schedules[day].start_time == "12:30" %}selected{% endif %}>12:30 PM</option>
+                                        <option value="13:00" {% if schedules[day] and schedules[day].start_time == "13:00" %}selected{% endif %}>01:00 PM</option>
+                                        <option value="13:30" {% if schedules[day] and schedules[day].start_time == "13:30" %}selected{% endif %}>01:30 PM</option>
+                                        <option value="14:00" {% if schedules[day] and schedules[day].start_time == "14:00" %}selected{% endif %}>02:00 PM</option>
+                                        <option value="14:30" {% if schedules[day] and schedules[day].start_time == "14:30" %}selected{% endif %}>02:30 PM</option>
+                                        <option value="15:00" {% if schedules[day] and schedules[day].start_time == "15:00" %}selected{% endif %}>03:00 PM</option>
+                                        <option value="15:30" {% if schedules[day] and schedules[day].start_time == "15:30" %}selected{% endif %}>03:30 PM</option>
+                                        <option value="16:00" {% if schedules[day] and schedules[day].start_time == "16:00" %}selected{% endif %}>04:00 PM</option>
+                                        <option value="16:30" {% if schedules[day] and schedules[day].start_time == "16:30" %}selected{% endif %}>04:30 PM</option>
+                                        <option value="17:00" {% if schedules[day] and schedules[day].start_time == "17:00" %}selected{% endif %}>05:00 PM</option>
+                                        <option value="17:30" {% if schedules[day] and schedules[day].start_time == "17:30" %}selected{% endif %}>05:30 PM</option>
+                                        <option value="18:00" {% if schedules[day] and schedules[day].start_time == "18:00" %}selected{% endif %}>06:00 PM</option>
+                                        <option value="18:30" {% if schedules[day] and schedules[day].start_time == "18:30" %}selected{% endif %}>06:30 PM</option>
+                                        <option value="19:00" {% if schedules[day] and schedules[day].start_time == "19:00" %}selected{% endif %}>07:00 PM</option>
+                                        <option value="19:30" {% if schedules[day] and schedules[day].start_time == "19:30" %}selected{% endif %}>07:30 PM</option>
+                                        <option value="20:00" {% if schedules[day] and schedules[day].start_time == "20:00" %}selected{% endif %}>08:00 PM</option>
+                                        <option value="20:30" {% if schedules[day] and schedules[day].start_time == "20:30" %}selected{% endif %}>08:30 PM</option>
+                                        <option value="21:00" {% if schedules[day] and schedules[day].start_time == "21:00" %}selected{% endif %}>09:00 PM</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">End Time (AM/PM)</label>
+                                    <select class="form-select" name="end_{{ day }}" id="end_{{ day }}">
+                                        <option value="">Not Available</option>
+                                        <option value="09:30" {% if schedules[day] and schedules[day].end_time == "09:30" %}selected{% endif %}>09:30 AM</option>
+                                        <option value="10:00" {% if schedules[day] and schedules[day].end_time == "10:00" %}selected{% endif %}>10:00 AM</option>
+                                        <option value="10:30" {% if schedules[day] and schedules[day].end_time == "10:30" %}selected{% endif %}>10:30 AM</option>
+                                        <option value="11:00" {% if schedules[day] and schedules[day].end_time == "11:00" %}selected{% endif %}>11:00 AM</option>
+                                        <option value="11:30" {% if schedules[day] and schedules[day].end_time == "11:30" %}selected{% endif %}>11:30 AM</option>
+                                        <option value="12:00" {% if schedules[day] and schedules[day].end_time == "12:00" %}selected{% endif %}>12:00 PM</option>
+                                        <option value="12:30" {% if schedules[day] and schedules[day].end_time == "12:30" %}selected{% endif %}>12:30 PM</option>
+                                        <option value="13:00" {% if schedules[day] and schedules[day].end_time == "13:00" %}selected{% endif %}>01:00 PM</option>
+                                        <option value="13:30" {% if schedules[day] and schedules[day].end_time == "13:30" %}selected{% endif %}>01:30 PM</option>
+                                        <option value="14:00" {% if schedules[day] and schedules[day].end_time == "14:00" %}selected{% endif %}>02:00 PM</option>
+                                        <option value="14:30" {% if schedules[day] and schedules[day].end_time == "14:30" %}selected{% endif %}>02:30 PM</option>
+                                        <option value="15:00" {% if schedules[day] and schedules[day].end_time == "15:00" %}selected{% endif %}>03:00 PM</option>
+                                        <option value="15:30" {% if schedules[day] and schedules[day].end_time == "15:30" %}selected{% endif %}>03:30 PM</option>
+                                        <option value="16:00" {% if schedules[day] and schedules[day].end_time == "16:00" %}selected{% endif %}>04:00 PM</option>
+                                        <option value="16:30" {% if schedules[day] and schedules[day].end_time == "16:30" %}selected{% endif %}>04:30 PM</option>
+                                        <option value="17:00" {% if schedules[day] and schedules[day].end_time == "17:00" %}selected{% endif %}>05:00 PM</option>
+                                        <option value="17:30" {% if schedules[day] and schedules[day].end_time == "17:30" %}selected{% endif %}>05:30 PM</option>
+                                        <option value="18:00" {% if schedules[day] and schedules[day].end_time == "18:00" %}selected{% endif %}>06:00 PM</option>
+                                        <option value="18:30" {% if schedules[day] and schedules[day].end_time == "18:30" %}selected{% endif %}>06:30 PM</option>
+                                        <option value="19:00" {% if schedules[day] and schedules[day].end_time == "19:00" %}selected{% endif %}>07:00 PM</option>
+                                        <option value="19:30" {% if schedules[day] and schedules[day].end_time == "19:30" %}selected{% endif %}>07:30 PM</option>
+                                        <option value="20:00" {% if schedules[day] and schedules[day].end_time == "20:00" %}selected{% endif %}>08:00 PM</option>
+                                        <option value="20:30" {% if schedules[day] and schedules[day].end_time == "20:30" %}selected{% endif %}>08:30 PM</option>
+                                        <option value="21:00" {% if schedules[day] and schedules[day].end_time == "21:00" %}selected{% endif %}>09:00 PM</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Slot Duration (min)</label>
+                                    <select class="form-select" name="duration_{{ day }}">
+                                        <option value="15" {% if schedules[day] and schedules[day].slot_duration == 15 %}selected{% endif %}>15 minutes</option>
+                                        <option value="30" {% if not schedules[day] or schedules[day].slot_duration == 30 %}selected{% endif %}>30 minutes</option>
+                                        <option value="45" {% if schedules[day] and schedules[day].slot_duration == 45 %}selected{% endif %}>45 minutes</option>
+                                        <option value="60" {% if schedules[day] and schedules[day].slot_duration == 60 %}selected{% endif %}>60 minutes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="unavailable_{{ day }}" id="unavailable_{{ day }}" 
+                                               {% if not schedules[day] %}checked{% endif %}>
+                                        <label class="form-check-label" for="unavailable_{{ day }}">
+                                            Mark as unavailable (day off)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Schedule must be within hospital working hours (9:00 AM - 9:00 PM).
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Schedule
+                        </button>
+                        <a href="{{ url_for('admin_doctor_schedules') }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle unavailable checkbox
+    for (let day = 0; day < 7; day++) {
+        const unavailableCheck = document.getElementById(`unavailable_${day}`);
+        const startSelect = document.getElementById(`start_${day}`);
+        const endSelect = document.getElementById(`end_${day}`);
+        const durationSelect = document.querySelector(`select[name="duration_${day}"]`);
+        
+        function toggleFields() {
+            if (unavailableCheck.checked) {
+                startSelect.value = '';
+                endSelect.value = '';
+                startSelect.disabled = true;
+                endSelect.disabled = true;
+                durationSelect.disabled = true;
+            } else {
+                startSelect.disabled = false;
+                endSelect.disabled = false;
+                durationSelect.disabled = false;
+            }
+        }
+        
+        // Initial state
+        toggleFields();
+        
+        // Add event listener
+        unavailableCheck.addEventListener('change', toggleFields);
+    }
+    
+    // Form validation
+    document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+        let hasError = false;
+        
+        for (let day = 0; day < 7; day++) {
+            const unavailableCheck = document.getElementById(`unavailable_${day}`);
+            const startSelect = document.getElementById(`start_${day}`);
+            const endSelect = document.getElementById(`end_${day}`);
+            
+            if (!unavailableCheck.checked) {
+                if (!startSelect.value || !endSelect.value) {
+                    alert(`Please set both start and end time for ${document.querySelectorAll('.card-header h6')[day].textContent} or mark as unavailable`);
+                    e.preventDefault();
+                    hasError = true;
+                    break;
+                }
+                
+                // Validate start time < end time
+                if (startSelect.value >= endSelect.value) {
+                    alert(`End time must be after start time for ${document.querySelectorAll('.card-header h6')[day].textContent}`);
+                    e.preventDefault();
+                    hasError = true;
+                    break;
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

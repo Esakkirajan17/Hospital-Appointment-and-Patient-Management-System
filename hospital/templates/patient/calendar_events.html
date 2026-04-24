@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}My Calendar{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-calendar-alt me-2 text-primary"></i>My Calendar Events</h2>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Upcoming Appointments</h5>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Doctor</th>
+                                    <th>Type</th>
+                                    <th>Appointment #</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in appointments %}
+                                <tr>
+                                    <td>{{ app.appointment_date.strftime('%d-%m-%Y') }}</td>
+                                    <td>{{ app.appointment_time }}</td>
+                                    <td>{{ app.doctor.user.full_name|doctor_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if app.consultation_type == 'online' else 'primary' }}">
+                                            {{ app.consultation_type|upper }}
+                                        </span>
+                                    </td>
+                                    <td><code>{{ app.appointment_number }}</code></td>
+                                    <td>
+                                        <a href="{{ url_for('add_to_calendar', appointment_id=app.id) }}" 
+                                           class="btn btn-sm btn-outline-danger" target="_blank">
+                                            <i class="fab fa-google me-1"></i>Add to Google
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No upcoming appointments found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Calendar Integration Guide</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fab fa-google text-danger me-2"></i>Google Calendar</h6>
+                        <p>Click the "Add to Google" button next to any appointment to add it to your Google Calendar. The event will include:</p>
+                        <ul>
+                            <li>Appointment details</li>
+                            <li>Doctor information</li>
+                            <li>Symptoms description</li>
+                            <li>Appointment number</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-apple-alt text-dark me-2"></i>Apple Calendar</h6>
+                        <p>For Apple Calendar, you can download the .ics file by clicking the download button below:</p>
+                        <button class="btn btn-sm btn-outline-dark" disabled>
+                            <i class="fas fa-download me-1"></i>Download .ics (Coming Soon)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

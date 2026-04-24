@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Leave Feedback{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    .rating-stars input {
+        display: none;
+    }
+    .rating-stars label {
+        font-size: 2rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label,
+    .rating-stars input:checked ~ label {
+        color: #ffc107;
+        text-shadow: 0 0 5px rgba(255,193,7,0.5);
+    }
+    .rating-stars label:hover {
+        transform: scale(1.1);
+    }
+    .feedback-card {
+        transition: all 0.3s;
+    }
+    .feedback-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow feedback-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-star"></i> Share Your Feedback</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Your feedback helps us improve our services and helps other patients choose the right doctor.
+                    </div>
+                    
+                    <!-- Doctor Info -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user-md fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ appointment.doctor.user.full_name|doctor_name }}</h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-stethoscope"></i> {{ appointment.doctor.specialization }} | 
+                                        <i class="fas fa-calendar"></i> {{ appointment.appointment_date.strftime('%d-%m-%Y') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST">
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">How would you rate the doctor? <span class="text-danger">*</span></label>
+                            <div class="rating-stars">
+                                <input type="radio" name="rating" value="5" id="star5" required>
+                                <label for="star5" title="Excellent">★</label>
+                                
+                                <input type="radio" name="rating" value="4" id="star4">
+                                <label for="star4" title="Very Good">★</label>
+                                
+                                <input type="radio" name="rating" value="3" id="star3">
+                                <label for="star3" title="Good">★</label>
+                                
+                                <input type="radio" name="rating" value="2" id="star2">
+                                <label for="star2" title="Fair">★</label>
+                                
+                                <input type="radio" name="rating" value="1" id="star1">
+                                <label for="star1" title="Poor">★</label>
+                            </div>
+                            <small class="text-muted">Click on the stars to rate</small>
+                        </div>
+                        
+                        <!-- Waiting Time -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Waiting time at clinic?</label>
+                            <select class="form-select" name="waiting_time">
+                                <option value="0">Less than 10 minutes</option>
+                                <option value="1">10-20 minutes</option>
+                                <option value="2">20-30 minutes</option>
+                                <option value="3">30-45 minutes</option>
+                                <option value="4">More than 45 minutes</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Written Feedback -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Experience</label>
+                            <textarea class="form-control" name="comment" rows="4" 
+                                      placeholder="Share your experience with the doctor..."></textarea>
+                        </div>
+                        
+                        <!-- Recommend -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="recommended" id="recommended" checked>
+                            <label class="form-check-label" for="recommended">
+                                <i class="fas fa-thumbs-up text-success"></i> I would recommend this doctor to others
+                            </label>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tips for good feedback -->
+            <div class="card mt-3 bg-light">
+                <div class="card-body">
+                    <h6><i class="fas fa-lightbulb text-warning"></i> Tips for good feedback:</h6>
+                    <ul class="small mb-0">
+                        <li>Be specific about what you liked or didn't like</li>
+                        <li>Mention if the doctor explained things clearly</li>
+                        <li>Share if the treatment was effective</li>
+                        <li>Your feedback helps other patients choose the right doctor</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Optional: Add rating display message
+document.querySelectorAll('.rating-stars input').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const rating = this.value;
+        let message = '';
+        switch(rating) {
+            case '5': message = 'Excellent! Thank you!'; break;
+            case '4': message = 'Very Good!'; break;
+            case '3': message = 'Good feedback!'; break;
+            case '2': message = 'We will improve!'; break;
+            case '1': message = 'Sorry to hear that!'; break;
+        }
+        const existingMsg = document.querySelector('.rating-message');
+        if (existingMsg) existingMsg.remove();
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'alert alert-success mt-2 rating-message';
+        msgDiv.innerHTML = `<i class="fas fa-smile"></i> ${message}`;
+        this.closest('.rating-stars').insertAdjacentElement('afterend', msgDiv);
+        setTimeout(() => msgDiv.remove(), 3000);
+    });
+});
+</script>
+{% endblock %}

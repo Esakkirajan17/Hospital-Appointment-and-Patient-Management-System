@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}View Report - {{ report.report_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-file-medical me-2"></i>Report Details</h4>
+                        <span class="badge bg-light text-dark">{{ report.report_number }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Report Status -->
+                    <div class="alert alert-{{ 'success' if report.is_verified else 'warning' }} mb-4">
+                        <i class="fas fa-{{ 'check-circle' if report.is_verified else 'clock' }} me-2"></i>
+                        <strong>Status:</strong> {{ 'Verified' if report.is_verified else 'Pending Verification' }}
+                        {% if report.is_verified and report.verifying_doctor %}
+                            <br><small>Verified by {{ report.verifying_doctor.user.full_name|doctor_name }} on {{ report.upload_date|date_ist }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <!-- Patient Information -->
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Patient Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <th width="40%">Patient Name:</th>
+                                            <td>{{ report.patient.user.full_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Age:</th>
+                                            <td>{% if report.patient.date_of_birth %}{{ (now.date() - report.patient.date_of_birth).days // 365 }}{% else %}N/A{% endif %}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Blood Group:</th>
+                                            <td>{{ report.patient.blood_group or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Phone:</th>
+                                            <td>{{ report.patient.user.phone or 'N/A' }}</td>
+                                        </tr>
+                                        {% if report.appointment %}
+                                        <tr>
+                                            <th>Appointment #:</th>
+                                            <td>{{ report.appointment.appointment_number }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Consultation Date:</th>
+                                            <td>{{ report.appointment.appointment_date|date_ist }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report Information -->
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Report Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <th width="40%">Report Type:</th>
+                                            <td><span class="badge bg-primary">{{ report.report_type|upper }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th>File Name:</th>
+                                            <td>{{ report.report_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Upload Date:</th>
+                                            <td>{{ report.upload_date|date_ist }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Assigned Doctor:</th>
+                                            <td>
+                                                {% if report.doctor %}
+                                                    {{ report.doctor.user.full_name|doctor_name }}
+                                                {% else %}
+                                                    <span class="text-warning">Not Assigned</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% if report.description %}
+                                        <tr>
+                                            <th>Description:</th>
+                                            <td>{{ report.description }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Preview -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fas fa-file-pdf me-2"></i>Report Preview</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if report.report_name.endswith('.pdf') %}
+                                <div style="height: 600px;">
+                                    <embed src="{{ url_for('doctor_view_report', report_id=report.id) }}" 
+                                           type="application/pdf" 
+                                           style="width: 100%; height: 100%;">
+                                </div>
+                                <p class="mt-3 text-muted">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    PDF Document - Use the download button to save a copy.
+                                </p>
+                            {% elif report.report_name.endswith(('.png', '.jpg', '.jpeg', '.gif')) %}
+                                <img src="{{ url_for('doctor_view_report', report_id=report.id) }}" 
+                                     alt="Report Image" 
+                                     class="img-fluid" 
+                                     style="max-height: 500px;">
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    This file type cannot be previewed. Please download to view.
+                                </div>
+                                <p class="mt-3">File: {{ report.report_name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('doctor_patient_reports') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                        </a>
+                        <div>
+                            <a href="{{ url_for('doctor_download_report', report_id=report.id) }}" class="btn btn-success">
+                                <i class="fas fa-download me-2"></i>Download Report
+                            </a>
+                            {% if not report.is_verified and report.doctor_id == doctor.id %}
+                            <form action="{{ url_for('doctor_verify_report', report_id=report.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-info" onclick="return confirm('Verify this report?')">
+                                    <i class="fas fa-check-circle me-2"></i>Verify Report
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

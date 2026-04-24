@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Hospital Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">Hospital Appointment & Patient Management System</h1>
+        <p class="lead">Complete healthcare management with bed tracking and SMS notifications</p>
+        
+        <div class="row mt-5">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-user-md fa-3x text-primary mb-3"></i>
+                        <h5>For Doctors</h5>
+                        <p class="text-muted">Manage appointments, view queues, update patient records, conduct ward rounds</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-user-injured fa-3x text-success mb-3"></i>
+                        <h5>For Patients</h5>
+                        <p class="text-muted">Book appointments, check symptoms, request beds, view prescriptions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-user-cog fa-3x text-warning mb-3"></i>
+                        <h5>For Admin</h5>
+                        <p class="text-muted">Monitor system, manage users, track beds, view analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>Key Features:</h5>
+            <p>
+                <span class="badge bg-primary me-2">Appointment SMS</span>
+                <span class="badge bg-success me-2">Bed Management</span>
+                <span class="badge bg-info me-2">PDF Prescriptions</span>
+                <span class="badge bg-warning me-2">Google Calendar</span>
+                <span class="badge bg-danger me-2">Analytics</span>
+            </p>
+        </div>
+
+        {% if not current_user.is_authenticated %}
+        <div class="mt-4">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-2">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2 text-primary"></i>Analytics Dashboard</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('admin_analytics', days=7) }}" class="btn btn-outline-primary {% if days == 7 %}active{% endif %}">7 Days</a>
+        <a href="{{ url_for('admin_analytics', days=30) }}" class="btn btn-outline-primary {% if days == 30 %}active{% endif %}">30 Days</a>
+        <a href="{{ url_for('admin_analytics', days=90) }}" class="btn btn-outline-primary {% if days == 90 %}active{% endif %}">90 Days</a>
+        <a href="{{ url_for('admin_analytics', days=365) }}" class="btn btn-outline-primary {% if days == 365 %}active{% endif %}">1 Year</a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h3>{{ daily|sum(attribute='count') }}</h3>
+                <p class="mb-0">Total Appointments</p>
+                <small>{{ (daily|sum(attribute='count') / days)|round(1) }}/day avg</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h3>₹{{ "%.0f"|format(daily|sum(attribute='revenue')) }}</h3>
+                <p class="mb-0">Total Revenue</p>
+                <small>₹{{ (daily|sum(attribute='revenue') / days)|round(0) }}/day avg</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h3>
+                    {% for type in consultation_types %}
+                        {% if type.consultation_type == 'online' %}{{ type.count }}{% endif %}
+                    {% endfor %} / 
+                    {% for type in consultation_types %}
+                        {% if type.consultation_type == 'offline' %}{{ type.count }}{% endif %}
+                    {% endfor %}
+                </h3>
+                <p class="mb-0">Online/Offline</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h3>{{ "%.1f"|format(cancellation_rate) }}%</h3>
+                <p class="mb-0">Cancellation Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Daily Appointment Trends</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Consultation Types</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="typeChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Department Statistics -->
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Department-wise Breakdown</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Appointments</th>
+                        <th>Revenue</th>
+                        <th>Average per Appointment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in dept_stats %}
+                    <tr>
+                        <td>{{ dept.recommended_dept }}</td>
+                        <td>{{ dept.count }}</td>
+                        <td>₹{{ "%.0f"|format(dept.revenue) }}</td>
+                        <td>₹{{ "%.0f"|format(dept.revenue / dept.count) if dept.count > 0 else 0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Daily Appointments Chart
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for item in daily %}'{{ item.date }}',{% endfor %}],
+        datasets: [{
+            label: 'Appointments',
+            data: [{% for item in daily %}{{ item.count }},{% endfor %}],
+            borderColor: '#0d6efd',
+            tension: 0.1,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Consultation Types Chart
+const typeCtx = document.getElementById('typeChart').getContext('2d');
+new Chart(typeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for item in consultation_types %}'{{ item.consultation_type|upper }}',{% endfor %}],
+        datasets: [{
+            data: [{% for item in consultation_types %}{{ item.count }},{% endfor %}],
+            backgroundColor: ['#198754', '#0d6efd']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
+{% endblock %}

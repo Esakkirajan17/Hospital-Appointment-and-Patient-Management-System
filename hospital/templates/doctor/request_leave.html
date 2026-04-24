@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Request Leave{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-calendar-times me-2"></i>Request Leave</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock fa-2x me-3"></i>
+                        <div>
+                            <strong>Current Time:</strong> {{ now.strftime('%I:%M %p') }} IST<br>
+                            <strong>Working Hours:</strong> 9:00 AM to 9:00 PM (IST)
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="POST" id="leaveForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" name="start_date" 
+                                   min="{{ now.date().strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" name="end_date" 
+                                   min="{{ now.date().strftime('%Y-%m-%d') }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Leave</label>
+                        <textarea class="form-control" name="reason" rows="4" 
+                                  placeholder="Please provide reason..." required></textarea>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Important Notes:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Your leave request will be sent to admin for approval.</li>
+                            <li>Please ensure the dates are within your working schedule.</li>
+                            <li>Request at least 3 days in advance for better approval.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Request
+                        </button>
+                        <a href="{{ url_for('doctor_schedule') }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Leave Balance -->
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-simple me-2"></i>Leave Balance</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h3>12</h3>
+                        <p class="text-muted small">Annual Leave</p>
+                    </div>
+                    <div class="col-4">
+                        <h3>3</h3>
+                        <p class="text-muted small">Sick Leave</p>
+                    </div>
+                    <div class="col-4">
+                        <h3>2</h3>
+                        <p class="text-muted small">Casual Leave</p>
+                    </div>
+                </div>
+                <div class="progress mt-3">
+                    <div class="progress-bar bg-success" style="width: 70%">Used: 70%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('leaveForm').addEventListener('submit', function(e) {
+    const startDate = new Date(document.querySelector('input[name="start_date"]').value);
+    const endDate = new Date(document.querySelector('input[name="end_date"]').value);
+    
+    if (endDate < startDate) {
+        e.preventDefault();
+        alert('End date cannot be before start date');
+    }
+});
+</script>
+{% endblock %}

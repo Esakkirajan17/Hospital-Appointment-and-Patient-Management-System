@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Feedbacks{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Patient Feedbacks</h2>
+            <hr>
+            
+            {% if feedbacks %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Date</th>
+                                <th>Rating</th>
+                                <th>Feedback</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in feedbacks %}
+                            <tr>
+                                <td>{{ feedback.patient_name }}</td>
+                                <td>{{ feedback.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% for i in range(feedback.rating) %}
+                                        ⭐
+                                    {% endfor %}
+                                </td>
+                                <td>{{ feedback.comment }}</td>
+                                <td>
+                                    {% if feedback.is_anonymous %}
+                                        <span class="badge bg-secondary">Anonymous</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Public</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No feedbacks available yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

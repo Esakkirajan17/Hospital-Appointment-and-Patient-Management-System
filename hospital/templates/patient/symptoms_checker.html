@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Symptom Checker{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-stethoscope me-2"></i>Symptom Checker</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Describe Your Symptoms</label>
+                        <textarea class="form-control" name="symptoms" rows="5" 
+                                  placeholder="E.g., fever, headache, chest pain, cough, etc." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-info text-white w-100">
+                        <i class="fas fa-search me-2"></i>Analyze Symptoms
+                    </button>
+                </form>
+                
+                {% if recommendation %}
+                <div class="mt-4 p-4 bg-light rounded">
+                    <h5 class="text-success mb-3">📋 Recommendation:</h5>
+                    <div class="d-flex align-items-center">
+                        <span style="font-size: 3rem; margin-right: 1.5rem;">{{ recommendation.icon }}</span>
+                        <div>
+                            <h3 class="mb-2">{{ recommendation.department }}</h3>
+                            <span class="badge bg-{{ 'danger' if recommendation.priority == 'Urgent' else 'warning' }} p-2">
+                                {{ recommendation.priority }}
+                            </span>
+                            <p class="mt-3 mb-0">
+                                <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <h6>Common Symptoms & Departments:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item">🩺 Fever, Cold, Cough → General Medicine</li>
+                                <li class="list-group-item">❤️ Chest Pain, Heart Issues → Cardiology</li>
+                                <li class="list-group-item">🧬 Stomach Pain, Digestion → Gastroenterology</li>
+                                <li class="list-group-item">🧠 Headache, Dizziness → Neurology</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item">🦴 Bone, Joint Pain → Orthopedics</li>
+                                <li class="list-group-item">🧴 Skin Rash, Allergies → Dermatology</li>
+                                <li class="list-group-item">👶 Child, Baby → Pediatrics</li>
+                                <li class="list-group-item">🚑 Emergency, Severe → Emergency</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

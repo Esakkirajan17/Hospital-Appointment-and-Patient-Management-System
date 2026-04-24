@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Medical Report{% endblock %}
+
+{% block styles %}
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .upload-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    [data-bs-theme="dark"] .upload-card {
+        background: #2c3034;
+        border: 1px solid #444;
+    }
+    
+    .drop-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 1rem;
+    }
+    
+    .drop-zone:hover {
+        border-color: #0d6efd;
+        background: rgba(13, 110, 253, 0.05);
+    }
+    
+    .file-preview {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+    }
+    
+    [data-bs-theme="dark"] .file-preview {
+        background: #1e1e1e;
+    }
+    
+    .preview-icon {
+        font-size: 3rem;
+        margin-right: 1rem;
+    }
+    
+    .allowed-formats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .format-badge {
+        background: #e9ecef;
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
+    
+    [data-bs-theme="dark"] .format-badge {
+        background: #1e1e1e;
+        border: 1px solid #444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="upload-card">
+        <h2 class="mb-4"><i class="fas fa-upload me-2 text-primary"></i>Upload Medical Report</h2>
+        
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Upload your medical reports (X-rays, scans, lab reports, etc.) for doctor review.
+            <strong>Supported formats:</strong> PNG, JPG, PDF, DOC, DOCX (Max: 16MB)
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <div class="mb-3">
+                <label class="form-label">Report Type</label>
+                <select class="form-select" name="report_type" required>
+                    <option value="">Select report type...</option>
+                    <option value="xray">X-Ray</option>
+                    <option value="scan">MRI/CT Scan</option>
+                    <option value="lab">Lab Report</option>
+                    <option value="prescription">Prescription</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Select File</label>
+                <div class="drop-zone" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                    <p class="mb-1">Drag & drop your file here or click to browse</p>
+                    <small class="text-muted">Maximum file size: 16MB</small>
+                    <input type="file" name="report_file" id="fileInput" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx">
+                </div>
+                
+                <div class="file-preview" id="filePreview">
+                    <div class="d-flex align-items-center">
+                        <div class="preview-icon">
+                            <i class="fas fa-file-pdf" id="fileIcon"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1" id="fileName">No file selected</h6>
+                            <small class="text-muted" id="fileSize"></small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="clearFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Select Doctor (Optional)</label>
+                <select class="form-select" name="doctor_id">
+                    <option value="">No specific doctor</option>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}">{{ doctor.user.full_name }} - {{ doctor.specialization }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Select if you want a specific doctor to review</small>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Related Appointment (Optional)</label>
+                <select class="form-select" name="appointment_id">
+                    <option value="">No specific appointment</option>
+                    {% for app in appointments %}
+                    <option value="{{ app.id }}">{{ app.appointment_number }} - {{ app.doctor.user.full_name }} ({{ app.appointment_date|date_ist }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="3" 
+                          placeholder="Describe the report (e.g., Chest X-ray taken on 15-03-2026)"></textarea>
+            </div>
+            
+            <div class="allowed-formats mb-4">
+                <span class="format-badge">PNG</span>
+                <span class="format-badge">JPG</span>
+                <span class="format-badge">JPEG</span>
+                <span class="format-badge">PDF</span>
+                <span class="format-badge">DOC</span>
+                <span class="format-badge">DOCX</span>
+            </div>
+            
+            <div class="progress mb-3" id="uploadProgress" style="display: none;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 0%" id="progressBar">0%</div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                    <i class="fas fa-upload me-2"></i>Upload Report
+                </button>
+                <a href="{{ url_for('my_reports') }}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Upload Guidelines -->
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Upload Guidelines</h5>
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li>✅ All files are securely stored and HIPAA compliant</li>
+                <li>✅ Only you and your assigned doctors can view the reports</li>
+                <li>✅ Reports will be verified by doctors after upload</li>
+                <li>✅ You can download your reports anytime</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileIcon = document.getElementById('fileIcon');
+    const clearBtn = document.getElementById('clearFile');
+    const submitBtn = document.getElementById('submitBtn');
+    let selectedFile = null;
+    
+    // Click on drop zone
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#0d6efd';
+        dropZone.style.background = 'rgba(13, 110, 253, 0.05)';
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#dee2e6';
+        dropZone.style.background = '';
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#dee2e6';
+        dropZone.style.background = '';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+    
+    function handleFile(file) {
+        // Check file size (16MB limit)
+        if (file.size > 16 * 1024 * 1024) {
+            alert('File size exceeds 16MB limit');
+            return;
+        }
+        
+        selectedFile = file;
+        fileName.textContent = file.name;
+        fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+        
+        // Set icon based on file type
+        if (file.type.includes('pdf')) {
+            fileIcon.className = 'fas fa-file-pdf text-danger fa-3x';
+        } else if (file.type.includes('image')) {
+            fileIcon.className = 'fas fa-file-image text-primary fa-3x';
+        } else if (file.type.includes('word')) {
+            fileIcon.className = 'fas fa-file-word text-primary fa-3x';
+        } else {
+            fileIcon.className = 'fas fa-file text-secondary fa-3x';
+        }
+        
+        filePreview.style.display = 'block';
+        submitBtn.disabled = false;
+    }
+    
+    clearBtn.addEventListener('click', () => {
+        selectedFile = null;
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        submitBtn.disabled = true;
+    });
+    
+    // Form submission with progress
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        if (!selectedFile) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return;
+        }
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const progress = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+        progress.style.display = 'block';
+        
+        let width = 0;
+        const interval = setInterval(() => {
+            if (width >= 100) {
+                clearInterval(interval);
+            } else {
+                width += 10;
+                progressBar.style.width = width + '%';
+                progressBar.textContent = width + '%';
+            }
+        }, 200);
+    });
+});
+</script>
+{% endblock %}

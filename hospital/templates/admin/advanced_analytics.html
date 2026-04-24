@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card dashboard-header">
+                <div class="card-body">
+                    <h3><i class="fas fa-chart-line me-2"></i>Advanced Analytics Dashboard</h3>
+                    <p class="mb-0">Real-time insights and analytics for hospital management</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Patients</h6>
+                            <h3 class="mb-0">{{ stats.total_patients|default(0) }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Doctors</h6>
+                            <h3 class="mb-0">{{ stats.total_doctors|default(0) }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-user-md fa-3x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Appointments</h6>
+                            <h3 class="mb-0">{{ stats.total_appointments|default(0) }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check fa-3x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted">Total Revenue</h6>
+                            <h3 class="mb-0">₹{{ "%.0f"|format(stats.total_revenue|default(0)) }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-rupee-sign fa-3x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <!-- Monthly Appointments Chart -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Monthly Appointments Trend</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="monthlyAppointmentsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue by Department Chart -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Revenue by Department</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="departmentRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row mb-4">
+        <!-- Consultation Type Distribution -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Consultation Types</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="consultationTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Age Demographics -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Age Demographics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="ageDemographicsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blood Group Distribution -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-tint me-2"></i>Blood Group Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="bloodGroupChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="row mb-4">
+        <!-- Popular Lab Tests -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="fas fa-flask me-2"></i>Popular Lab Tests</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="labTestsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Performance -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5><i class="fas fa-star me-2"></i>Doctor Performance (Rating)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="doctorPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Metrics Overview -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5><i class="fas fa-heartbeat me-2"></i>Patient Health Metrics Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="metric-card">
+                                <h6 class="text-muted">Avg BP (Systolic)</h6>
+                                <p class="metric-value">{{ "%.0f"|format(stats.avg_bp_systolic|default(0)) }} <small>mmHg</small></p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="metric-card">
+                                <h6 class="text-muted">Avg BP (Diastolic)</h6>
+                                <p class="metric-value">{{ "%.0f"|format(stats.avg_bp_diastolic|default(0)) }} <small>mmHg</small></p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="metric-card">
+                                <h6 class="text-muted">Avg Heart Rate</h6>
+                                <p class="metric-value">{{ "%.0f"|format(stats.avg_heart_rate|default(0)) }} <small>bpm</small></p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="metric-card">
+                                <h6 class="text-muted">Avg Blood Sugar</h6>
+                                <p class="metric-value">{{ "%.0f"|format(stats.avg_blood_sugar|default(0)) }} <small>mg/dL</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. Monthly Appointments Trend (Line Chart)
+    const monthlyCtx = document.getElementById('monthlyAppointmentsChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly_labels|tojson }},
+            datasets: [{
+                label: 'Appointments',
+                data: {{ monthly_data|tojson }},
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Number of Appointments' } },
+                x: { title: { display: true, text: 'Month' } }
+            }
+        }
+    });
+
+    // 2. Revenue by Department (Pie Chart)
+    const deptCtx = document.getElementById('departmentRevenueChart').getContext('2d');
+    new Chart(deptCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ dept_labels|tojson }},
+            datasets: [{
+                data: {{ dept_revenue|tojson }},
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: { callbacks: { label: function(context) { return '₹' + context.raw.toLocaleString(); } } }
+            }
+        }
+    });
+
+    // 3. Consultation Type Distribution (Doughnut Chart)
+    const typeCtx = document.getElementById('consultationTypeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ type_labels|tojson }},
+            datasets: [{
+                data: {{ type_data|tojson }},
+                backgroundColor: ['#36A2EB', '#FFCE56'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // 4. Age Demographics (Bar Chart)
+    const ageCtx = document.getElementById('ageDemographicsChart').getContext('2d');
+    new Chart(ageCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ age_labels|tojson }},
+            datasets: [{
+                label: 'Number of Patients',
+                data: {{ age_data|tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Number of Patients' } } }
+        }
+    });
+
+    // 5. Blood Group Distribution (Bar Chart)
+    const bloodCtx = document.getElementById('bloodGroupChart').getContext('2d');
+    new Chart(bloodCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ blood_labels|tojson }},
+            datasets: [{
+                label: 'Patients',
+                data: {{ blood_data|tojson }},
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Number of Patients' } } }
+        }
+    });
+
+    // 6. Popular Lab Tests (Horizontal Bar Chart)
+    const labCtx = document.getElementById('labTestsChart').getContext('2d');
+    new Chart(labCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ lab_labels|tojson }},
+            datasets: [{
+                label: 'Bookings',
+                data: {{ lab_data|tojson }},
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                borderColor: 'rgb(153, 102, 255)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: { x: { beginAtZero: true, title: { display: true, text: 'Number of Bookings' } } }
+        }
+    });
+
+    // 7. Doctor Performance (Bar Chart)
+    const doctorCtx = document.getElementById('doctorPerformanceChart').getContext('2d');
+    new Chart(doctorCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ doctor_labels|tojson }},
+            datasets: [{
+                label: 'Rating',
+                data: {{ doctor_ratings|tojson }},
+                backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                borderColor: 'rgb(255, 206, 86)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 5, title: { display: true, text: 'Rating (1-5)' } }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 10px 0;
+    }
+    .metric-card {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin: 10px;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #007bff;
+    }
+    .stat-icon {
+        opacity: 0.7;
+    }
+</style>
+{% endblock %}

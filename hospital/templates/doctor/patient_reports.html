@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h3><i class="fas fa-file-medical me-2"></i>Patient Reports</h3>
+                    <p class="mb-0">View and manage patient medical reports</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ assigned_reports|length }}</h3>
+                    <p class="text-muted">Assigned to You</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ assigned_reports|selectattr('is_verified')|list|length }}</h3>
+                    <p class="text-muted">Verified</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ assigned_reports|rejectattr('is_verified')|list|length }}</h3>
+                    <p class="text-muted">Pending Verification</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ unassigned_reports|length }}</h3>
+                    <p class="text-muted">Unassigned Reports</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unassigned Reports Section -->
+    {% if unassigned_reports %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Unassigned Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Report #</th>
+                                    <th>Patient</th>
+                                    <th>Report Type</th>
+                                    <th>Upload Date</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in unassigned_reports %}
+                                <tr>
+                                    <td><strong>{{ report.report_number }}</strong></td>
+                                    <td>{{ report.patient.user.full_name }}</td>
+                                    <td><span class="badge bg-info">{{ report.report_type|upper }}</span></td>
+                                    <td>{{ report.upload_date|date_ist }}</td>
+                                    <td>{{ report.description[:50] }}{% if report.description|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('doctor_view_report', report_id=report.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <form action="{{ url_for('doctor_assign_report', report_id=report.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-success" onclick="return confirm('Assign this report to you?')">
+                                                    <i class="fas fa-user-check"></i> Assign
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Assigned Reports Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-folder-open me-2"></i>Assigned Reports</h5>
+                </div>
+                <div class="card-body">
+                    {% if assigned_reports %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Report #</th>
+                                    <th>Patient</th>
+                                    <th>Report Type</th>
+                                    <th>Upload Date</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in assigned_reports %}
+                                <tr class="{% if report.is_verified %}table-success{% else %}table-warning{% endif %}">
+                                    <td><strong>{{ report.report_number }}</strong></td>
+                                    <td>{{ report.patient.user.full_name }}</td>
+                                    <td><span class="badge bg-info">{{ report.report_type|upper }}</span></td>
+                                    <td>{{ report.upload_date|date_ist }}</td>
+                                    <td>
+                                        {% if report.is_verified %}
+                                            <span class="badge bg-success">Verified</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ report.description[:50] }}{% if report.description|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('doctor_view_report', report_id=report.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{{ url_for('doctor_download_report', report_id=report.id) }}" class="btn btn-outline-success">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                            {% if not report.is_verified %}
+                                            <form action="{{ url_for('doctor_verify_report', report_id=report.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-info" onclick="return confirm('Verify this report?')">
+                                                    <i class="fas fa-check-circle"></i> Verify
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                        <p>No reports assigned to you yet.</p>
+                        <p class="text-muted">Check the unassigned reports section above to take on new reports.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

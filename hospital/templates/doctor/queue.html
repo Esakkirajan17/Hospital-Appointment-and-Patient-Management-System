@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Queue{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<!-- Working Hours Info -->
+<div class="alert alert-info mb-3">
+    <i class="fas fa-clock me-2"></i>
+    <strong>Consultation Hours:</strong> 9:00 AM to 9:00 PM (IST)
+</div>
+
+<!-- Queue Header -->
+<div class="bg-primary text-white p-4 rounded mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Appointment Queue</h2>
+            <p class="mb-0">{{ now.date()|date_ist }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <span class="badge bg-light text-dark p-3">
+                <i class="fas fa-user-md me-2"></i>{{ current_user.full_name|doctor_name }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Buttons -->
+<div class="mb-4">
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('doctor_queue', type='all') }}" 
+           class="btn {% if current_filter == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            <i class="fas fa-list me-2"></i>All ({{ online_count + offline_count }})
+        </a>
+        <a href="{{ url_for('doctor_queue', type='online') }}" 
+           class="btn {% if current_filter == 'online' %}btn-success{% else %}btn-outline-success{% endif %}">
+            <i class="fas fa-video me-2"></i>Online ({{ online_count }})
+        </a>
+        <a href="{{ url_for('doctor_queue', type='offline') }}" 
+           class="btn {% if current_filter == 'offline' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            <i class="fas fa-hospital me-2"></i>Offline ({{ offline_count }})
+        </a>
+    </div>
+</div>
+
+<!-- Appointments List -->
+{% if appointments %}
+    {% for app in appointments %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-1">
+                    <span class="badge bg-{{ 'success' if app.consultation_type == 'online' else 'primary' }} p-2">
+                        <i class="fas fa-{{ 'video' if app.consultation_type == 'online' else 'hospital' }}"></i>
+                    </span>
+                </div>
+                <div class="col-md-2">
+                    <code>{{ app.appointment_number }}</code>
+                </div>
+                <div class="col-md-2">
+                    <h5 class="mb-0">
+                        <span class="time-12h" data-time="{{ app.appointment_time }}">
+                            {{ app.appointment_time|time_12h }}
+                        </span>
+                    </h5>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="mb-1">{{ app.patient.user.full_name }}</h6>
+                    <small class="text-muted">
+                        <i class="fas fa-phone me-1"></i>{{ app.patient.user.phone or 'No phone' }}
+                    </small>
+                </div>
+                <div class="col-md-2">
+                    <span class="badge bg-warning p-2">Waiting</span>
+                </div>
+                <div class="col-md-2 text-end">
+                    <a href="{{ url_for('update_record', appointment_id=app.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-stethoscope me-2"></i>Consult
+                    </a>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <small class="text-muted">
+                        <i class="fas fa-comment-medical me-1"></i>
+                        <strong>Symptoms:</strong> {{ app.symptoms }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-calendar-check fa-4x text-muted mb-3"></i>
+            <h4>No Appointments in Queue</h4>
+            <p class="text-muted mb-0">You have no appointments waiting for consultation.</p>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Auto-refresh (every 30 seconds) -->
+<script>
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

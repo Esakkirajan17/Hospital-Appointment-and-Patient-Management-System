@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Book Lab Test{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-flask"></i> Book Lab Test</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Test:</strong> {{ test.name }}<br>
+                        <strong>Price:</strong> ₹{{ test.price }}<br>
+                        <strong>Report Time:</strong> {{ test.report_time }}<br>
+                        <strong>Preparation:</strong> {{ test.preparation }}
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Booking Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="booking_date" 
+                                   min="{{ now.strftime('%Y-%m-%d') }}" required>
+                            <small class="text-muted">Select a date for your lab test</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Preferred Time <span class="text-danger">*</span></label>
+                            <select class="form-select" name="booking_time" required>
+                                <option value="">Select time</option>
+                                <option value="09:00">09:00 AM</option>
+                                <option value="09:30">09:30 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="12:30">12:30 PM</option>
+                                <option value="13:00">01:00 PM</option>
+                                <option value="13:30">01:30 PM</option>
+                                <option value="14:00">02:00 PM</option>
+                                <option value="14:30">02:30 PM</option>
+                                <option value="15:00">03:00 PM</option>
+                                <option value="15:30">03:30 PM</option>
+                                <option value="16:00">04:00 PM</option>
+                                <option value="16:30">04:30 PM</option>
+                                <option value="17:00">05:00 PM</option>
+                                <option value="17:30">05:30 PM</option>
+                                <option value="18:00">06:00 PM</option>
+                                <option value="18:30">06:30 PM</option>
+                                <option value="19:00">07:00 PM</option>
+                                <option value="19:30">07:30 PM</option>
+                                <option value="20:00">08:00 PM</option>
+                                <option value="20:30">08:30 PM</option>
+                                <option value="21:00">09:00 PM</option>
+                            </select>
+                            <small class="text-muted">Lab timings: 9:00 AM to 9:00 PM</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Special Instructions (if any)</label>
+                            <textarea class="form-control" name="instructions" rows="3" 
+                                      placeholder="Any specific instructions or notes for the lab"></textarea>
+                        </div>
+                        
+                        <div class="alert alert-warning small">
+                            <i class="fas fa-info-circle"></i> Please arrive 15 minutes before your scheduled time. 
+                            Bring any relevant medical records if applicable.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('patient_lab_tests') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

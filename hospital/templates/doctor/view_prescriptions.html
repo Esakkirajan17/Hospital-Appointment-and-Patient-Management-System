@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My Prescriptions{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="mb-3">
+    <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-prescription me-2 text-primary"></i>My Prescriptions</h2>
+        <p class="text-muted">Prescriptions issued by {{ current_user.full_name|doctor_name }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Prescription History</h5>
+            </div>
+            <div class="card-body">
+                {% if prescriptions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Prescription #</th>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Diagnosis</th>
+                                <th>Medication</th>
+                                <th>Appointment #</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pres in prescriptions %}
+                            <tr>
+                                <td><code>{{ pres.prescription_number }}</code></td>
+                                <td>{{ pres.patient.user.full_name }}</td>
+                                <td>{{ pres.prescribed_date.strftime('%d-%m-%Y') }}</td>
+                                <td>{{ pres.diagnosis[:40] }}...</td>
+                                <td>{{ pres.medication[:40] }}...</td>
+                                <td><code>{{ pres.appointment.appointment_number }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-prescription fa-4x text-muted mb-3"></i>
+                    <h4>No Prescriptions Issued</h4>
+                    <p class="text-muted">You haven't issued any prescriptions yet.</p>
+                    <a href="{{ url_for('doctor_queue') }}" class="btn btn-primary">
+                        <i class="fas fa-clipboard-list me-2"></i>Go to Queue
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

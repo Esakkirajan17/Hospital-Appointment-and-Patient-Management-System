@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Your Prescription{% endblock %}
+
+{% block styles %}
+<style>
+    .prescription-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    [data-bs-theme="dark"] .prescription-card {
+        background: #2c3034;
+        border: 1px solid #444;
+    }
+    
+    .paid-stamp {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        transform: rotate(15deg);
+    }
+    
+    .paid-badge {
+        background: #28a745;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: bold;
+    }
+    
+    .prescription-header {
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .medication-table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+    }
+    
+    .medication-table th {
+        background: #3498db;
+        color: white;
+        padding: 0.5rem;
+        text-align: left;
+    }
+    
+    .medication-table td {
+        padding: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .transaction-details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    [data-bs-theme="dark"] .transaction-details {
+        background: #1e1e1e;
+    }
+    
+    .action-buttons {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prescription-card position-relative">
+    <div class="paid-stamp">
+        <span class="paid-badge">
+            <i class="fas fa-check-circle me-2"></i>PAID
+        </span>
+    </div>
+    
+    <div class="prescription-header">
+        <h2 class="text-center">🏥 Digital Prescription</h2>
+        <p class="text-center text-muted">Hospital Management System</p>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h5>Patient Details</h5>
+            <p><strong>Name:</strong> {{ appointment.patient.user.full_name }}</p>
+            <p><strong>Age:</strong> {% if appointment.patient.date_of_birth %}
+                {{ (now.date() - appointment.patient.date_of_birth).days // 365 }} years
+                {% else %}N/A{% endif %}</p>
+            <p><strong>Blood Group:</strong> {{ appointment.patient.blood_group or 'N/A' }}</p>
+        </div>
+        <div class="col-md-6">
+            <h5>Appointment Details</h5>
+            <p><strong>Appointment #:</strong> {{ appointment.appointment_number }}</p>
+            <p><strong>Date:</strong> {{ appointment.appointment_date|date_ist }}</p>
+            <p><strong>Doctor:</strong> {{ appointment.doctor.user.full_name|doctor_name }}</p>
+            <p><strong>Department:</strong> {{ appointment.doctor.department }}</p>
+        </div>
+    </div>
+    
+    <hr>
+    
+    <h5>Diagnosis</h5>
+    <p>{{ prescription.diagnosis }}</p>
+    
+    <h5 class="mt-4">Prescribed Medication</h5>
+    <table class="medication-table">
+        <thead>
+            <tr>
+                <th>Medicine</th>
+                <th>Dosage</th>
+                <th>Duration</th>
+                <th>Instructions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for med in prescription.medication.split('\n') %}
+            <tr>
+                <td>{{ med.split(' - ')[0] if ' - ' in med else med }}</td>
+                <td>{{ med.split(' - ')[1] if ' - ' in med and med.split(' - ')|length > 1 else '-' }}</td>
+                <td>{{ med.split(' - ')[2] if ' - ' in med and med.split(' - ')|length > 2 else '-' }}</td>
+                <td>{{ med.split(' - ')[3] if ' - ' in med and med.split(' - ')|length > 3 else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if prescription.instructions %}
+    <h5 class="mt-4">Instructions</h5>
+    <p>{{ prescription.instructions }}</p>
+    {% endif %}
+    
+    <div class="transaction-details">
+        <h6>Payment Details</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Amount Paid:</strong> {{ appointment.fee_charged|currency }}</p>
+                <p><strong>Payment Date:</strong> {{ payment.transaction_date.strftime('%d-%m-%Y %H:%M') if payment else now.strftime('%d-%m-%Y %H:%M') }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Transaction ID:</strong> 
+                    <code>{{ payment.transaction_id if payment else 'N/A' }}</code>
+                </p>
+                <p><strong>Payment Status:</strong> 
+                    <span class="badge bg-success">Completed</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="signature text-end mt-4">
+        <p>_____________________</p>
+        <p><strong>{{ prescription.doctor.user.full_name|doctor_name }}</strong></p>
+        <p class="text-muted small">{{ prescription.doctor.specialization }}</p>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('download_prescription', prescription_id=prescription.id) }}" 
+           class="btn btn-success">
+            <i class="fas fa-download me-2"></i>Download PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="fas fa-print me-2"></i>Print
+        </button>
+        <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-home me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

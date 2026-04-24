@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Add Health Reading{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Add Health Reading</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Blood Pressure (Systolic)</label>
+                            <input type="number" class="form-control" name="bp_systolic" 
+                                   placeholder="120" min="70" max="250">
+                            <small class="text-muted">Top number (normal: <120)</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Blood Pressure (Diastolic)</label>
+                            <input type="number" class="form-control" name="bp_diastolic" 
+                                   placeholder="80" min="40" max="150">
+                            <small class="text-muted">Bottom number (normal: <80)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heart Rate</label>
+                            <input type="number" class="form-control" name="heart_rate" 
+                                   placeholder="72" min="40" max="200">
+                            <small class="text-muted">Beats per minute (normal: 60-100)</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Blood Sugar</label>
+                            <input type="number" step="0.1" class="form-control" name="blood_sugar" 
+                                   placeholder="95" min="50" max="500">
+                            <small class="text-muted">mg/dL (fasting normal: 70-100)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" step="0.1" class="form-control" name="weight" 
+                               value="{{ patient.weight or '' }}" min="20" max="300">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="Feeling, symptoms, etc."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You can leave fields blank if you don't have that reading.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Reading
+                        </button>
+                        <a href="{{ url_for('patient_health_dashboard') }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Normal Ranges Guide -->
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Normal Ranges</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Blood Pressure:</h6>
+                        <ul class="small">
+                            <li>Normal: < 120/80</li>
+                            <li>Elevated: 120-129/<80</li>
+                            <li>High Stage 1: 130-139/80-89</li>
+                            <li>High Stage 2: ≥140/≥90</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Other Metrics:</h6>
+                        <ul class="small">
+                            <li>Heart Rate: 60-100 bpm</li>
+                            <li>Blood Sugar (fasting): 70-100 mg/dL</li>
+                            <li>BMI: 18.5-24.9 (Normal)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
